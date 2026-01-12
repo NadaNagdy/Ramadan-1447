@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CrescentMoon } from './islamic-decorations';
-import { Menu, X, BookOpen, Calendar, Heart, Users } from 'lucide-react';
+import { Menu, X, BookOpen, Calendar, Heart, Users, FolderHeart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navigation: React.FC = () => {
@@ -17,6 +17,7 @@ const Navigation: React.FC = () => {
     { path: '/categories', label: 'أدعية بالنية', icon: BookOpen },
     { path: '/ai-dua', label: 'اصنع دعاءك', icon: Heart },
     { path: '/community-duas', label: 'دعاء المشاركين', icon: Users },
+    { path: '/my-duas', label: 'أدعيتي', icon: FolderHeart },
     { path: '/about', label: 'عن الموقع' },
   ];
 

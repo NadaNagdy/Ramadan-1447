@@ -2,12 +2,13 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Share2, Heart, Play, Pause, RotateCcw, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Share2, Heart, Play, Pause, RotateCcw, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import { DecorativeDivider } from './islamic-decorations';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { textToSpeech } from '@/ai/flows/tts-flow';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 interface DuaCardProps {
   day?: number;
@@ -16,10 +17,24 @@ interface DuaCardProps {
   audioUrl?: string;
   showActions?: boolean;
   showShareImageButton?: boolean;
+  isInitiallySaved?: boolean;
+  onSaveToggle?: () => void;
 }
 
-const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showActions = true, showShareImageButton = false }) => {
-  const [isSaved, setIsSaved] = useState(false);
+const DuaCard: React.FC<DuaCardProps> = ({ 
+  day, 
+  title, 
+  dua, 
+  audioUrl, 
+  showActions = true, 
+  showShareImageButton = false,
+  isInitiallySaved = false,
+  onSaveToggle 
+}) => {
+  const [savedDuas, setSavedDuas] = useLocalStorage<any[]>('saved_duas', []);
+  const isDuaSaved = isInitiallySaved || savedDuas.some(savedDua => savedDua.dua === dua);
+  const [isSaved, setIsSaved] = useState(isDuaSaved);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
@@ -28,6 +43,37 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    setIsSaved(isInitiallySaved || savedDuas.some(savedDua => savedDua.dua === dua));
+  }, [savedDuas, dua, isInitiallySaved]);
+
+  const handleSave = () => {
+    if (onSaveToggle) {
+        onSaveToggle();
+        setIsSaved(false); // Optimistically update UI
+        toast({
+          title: "تم الحذف",
+          description: "تم حذف الدعاء من قائمة أدعيتك.",
+        });
+        return;
+    }
+
+    if (isSaved) {
+      setSavedDuas(savedDuas.filter(d => d.dua !== dua));
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الدعاء من قائمة أدعيتك.",
+      });
+    } else {
+      setSavedDuas([...savedDuas, { title, dua }]);
+      toast({
+        title: "تم الحفظ",
+        description: "تم حفظ الدعاء في قائمة أدعيتك.",
+      });
+    }
+    setIsSaved(!isSaved);
+  };
 
   const effectiveAudioUrl = generatedAudioUrl || audioUrl;
 
@@ -186,8 +232,11 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
               <Button variant="ghost" onClick={handleShare} className="flex items-center gap-2 text-cream/60 hover:text-gold transition-colors">
                 <Share2 className="w-5 h-5" /> <span>مشاركة النص</span>
               </Button>
-              <Button variant="ghost" onClick={() => setIsSaved(!isSaved)} className={`flex items-center gap-2 transition-colors ${isSaved ? 'text-gold' : 'text-cream/60 hover:text-gold'}`}>
-                <Heart className={`w-5 h-5 transition-all ${isSaved ? 'fill-current' : ''}`} /> <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
+              <Button variant="ghost" onClick={handleSave} className={`flex items-center gap-2 transition-colors ${isSaved ? 'text-gold' : 'text-cream/60 hover:text-gold'}`}>
+                {isInitiallySaved 
+                  ? <><Trash2 className="w-5 h-5"/> <span>حذف</span></>
+                  : <><Heart className={`w-5 h-5 transition-all ${isSaved ? 'fill-current' : ''}`} /> <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span></>
+                }
               </Button>
             </>
           )}
