@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Share2, Heart, Play, Pause, RotateCcw, Image as ImageIcon } from 'lucide-react';
+import { Share2, Heart, Play, Pause, RotateCcw, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { DecorativeDivider } from './islamic-decorations';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
+import { textToSpeech } from '@/ai/flows/tts-flow';
 
 interface DuaCardProps {
   day?: number;
@@ -21,9 +22,14 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
   const [isSaved, setIsSaved] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [generatedAudioUrl, setGeneratedAudioUrl] = useState<string | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+
+  const effectiveAudioUrl = audioUrl || generatedAudioUrl;
 
   const handleShare = () => {
     const shareText = `${title}\n\n${dua}`;
@@ -45,14 +51,46 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
     router.push(`/generate-card?dua=${encodedDua}&title=${encodedTitle}`);
   };
 
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
+  const generateAndPlayAudio = useCallback(async () => {
+    if (isGeneratingAudio) return null;
+    setIsGeneratingAudio(true);
+    try {
+      const { audioDataUri } = await textToSpeech({ text: dua });
+      setGeneratedAudioUrl(audioDataUri);
+      return audioDataUri;
+    } catch (error) {
+      console.error("Audio generation failed:", error);
+      toast({
+        variant: "destructive",
+        title: "خطأ في توليد الصوت",
+        description: "لم نتمكن من تحويل النص إلى صوت حاليًا.",
+      });
+      return null;
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  }, [dua, toast, isGeneratingAudio]);
+
+  const togglePlay = async () => {
+    if (isGeneratingAudio) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      if (effectiveAudioUrl) {
+        if(audio.src !== effectiveAudioUrl) {
+          audio.src = effectiveAudioUrl;
+        }
+        audio.play().catch(e => console.error("Audio play failed", e));
       } else {
-        audioRef.current.play();
+         const newAudioUrl = await generateAndPlayAudio();
+         if (newAudioUrl && audio) {
+           audio.src = newAudioUrl;
+           audio.play().catch(e => console.error("Audio play failed", e));
+         }
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -65,28 +103,40 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
       }
     }
   };
-
+  
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
     const updateProgress = () => {
-      setProgress((audio.currentTime / audio.duration) * 100);
+      if (audio.duration > 0) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
       setProgress(100);
+      setTimeout(() => setProgress(0), 500);
     };
 
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
   }, []);
+
+  const showAudioPlayer = showActions || audioUrl;
 
   return (
     <div className="group relative bg-card-gradient rounded-2xl p-6 md:p-8 border border-gold/20 hover:border-gold/40 transition-all duration-300 shadow-lg">
@@ -99,27 +149,29 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
       <DecorativeDivider className="my-4" />
       <p className="font-amiri text-cream text-lg md:text-xl leading-relaxed text-center whitespace-pre-line">{dua}</p>
       
-      {audioUrl && (
-        <>
-          <audio ref={audioRef} src={audioUrl} preload="none" />
-          <div className="mt-6 pt-6 border-t border-gold/10">
-            <div className="flex items-center justify-center gap-4">
-              <button onClick={togglePlay} className="text-gold hover:text-gold-light transition-colors p-2 rounded-full bg-gold/10 hover:bg-gold/20">
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-              </button>
-              <div className="w-full max-w-xs bg-navy/50 rounded-full h-2 overflow-hidden">
-                <div className="bg-gold h-full" style={{ width: `${progress}%`, transition: 'width 0.1s linear' }} />
-              </div>
-              <button onClick={resetAudio} className="text-gold hover:text-gold-light transition-colors p-2 rounded-full bg-gold/10 hover:bg-gold/20">
-                <RotateCcw className="w-5 h-5" />
-              </button>
+      <audio ref={audioRef} preload="metadata" />
+
+      {showAudioPlayer && (
+        <div className="mt-6 pt-6 border-t border-gold/10">
+          <div className="flex items-center justify-center gap-4">
+            <Button variant="ghost" onClick={togglePlay} disabled={isGeneratingAudio} className="text-gold hover:text-gold-light transition-colors p-2 rounded-full bg-gold/10 hover:bg-gold/20 w-10 h-10">
+              {isGeneratingAudio 
+                ? <Loader2 className="w-6 h-6 animate-spin" />
+                : isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />
+              }
+            </Button>
+            <div className="w-full max-w-xs bg-navy/50 rounded-full h-2 overflow-hidden">
+              <div className="bg-gold h-full" style={{ width: `${progress}%`, transition: 'width 0.1s linear' }} />
             </div>
+            <Button variant="ghost" onClick={resetAudio} className="text-gold hover:text-gold-light transition-colors p-2 rounded-full bg-gold/10 hover:bg-gold/20 w-10 h-10">
+              <RotateCcw className="w-5 h-5" />
+            </Button>
           </div>
-        </>
+        </div>
       )}
 
       {(showActions || showShareImageButton) && (
-        <div className={cn("flex items-center justify-center gap-4 flex-wrap", audioUrl ? "mt-6" : "mt-6 pt-6 border-t border-gold/10")}>
+        <div className={cn("flex items-center justify-center gap-4 flex-wrap", showAudioPlayer ? "mt-6" : "mt-6 pt-6 border-t border-gold/10")}>
           {showActions && (
             <>
               <Button variant="ghost" onClick={handleShare} className="flex items-center gap-2 text-cream/60 hover:text-gold transition-colors">
