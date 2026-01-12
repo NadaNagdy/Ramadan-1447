@@ -24,7 +24,7 @@ export default function DuaDetailPage({ params }: { params: { id: string } }) {
           </Link>
           <span className="font-cairo text-gold">{dua.arabicTitle}</span>
         </div>
-        <DuaCard day={dua.day} title={dua.arabicTitle} dua={dua.dua} />
+        <DuaCard day={dua.day} title={dua.arabicTitle} dua={dua.dua} audioUrl={dua.audioUrl} />
       </div>
     </div>
   );

@@ -2,13 +2,18 @@
 
 import React, { useState } from 'react';
 import { FloatingStars, CrescentMoon, DecorativeDivider } from '@/components/islamic-decorations';
-import { Send } from 'lucide-react';
+import { Send, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function ShareDuaPage() {
+  const [name, setName] = useState('');
   const [dua, setDua] = useState('');
+  const [type, setType] = useState('public');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -23,13 +28,17 @@ export default function ShareDuaPage() {
       return;
     }
     setIsSubmitting(true);
-    // Simulate API call
+    // Here you would typically send the data to a backend or Google Form via an API
+    console.log({ name, dua, type });
+
     setTimeout(() => {
       toast({
         title: "تم الإرسال",
-        description: "شكراً لمشاركتك، سيتم مراجعة دعائك.",
+        description: "شكراً لمشاركتك، جزاك الله خيراً.",
       });
+      setName('');
       setDua('');
+      setType('public');
       setIsSubmitting(false);
     }, 1000);
   };
@@ -42,22 +51,55 @@ export default function ShareDuaPage() {
         <h1 className="font-amiri text-4xl text-cream mb-2">شارك دعاءك</h1>
         <p className="text-cream/60 mb-6">شارك بدعاء لتكون صدقة جارية لك</p>
         <DecorativeDivider className="mb-8" />
-        <form onSubmit={handleSubmit}>
-          <Textarea
-            value={dua}
-            onChange={(e) => setDua(e.target.value)}
-            placeholder="اكتب دعاءك هنا..."
-            className="w-full h-48 bg-card border border-gold/20 rounded-2xl p-4 text-cream text-lg font-amiri focus-visible:ring-gold"
-            dir="rtl"
-            disabled={isSubmitting}
-          />
+        <form onSubmit={handleSubmit} className="space-y-6 text-right">
+          <div>
+            <Label htmlFor="name" className="inline-block mb-2 font-cairo text-cream/80">الاسم (اختياري)</Label>
+            <div className="relative">
+              <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/50" />
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="اسمك الكريم"
+                className="w-full bg-card border border-gold/20 rounded-xl p-4 pr-10 text-cream text-lg font-cairo focus-visible:ring-gold"
+                dir="rtl"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="dua" className="inline-block mb-2 font-cairo text-cream/80">نص الدعاء</Label>
+            <Textarea
+              id="dua"
+              value={dua}
+              onChange={(e) => setDua(e.target.value)}
+              placeholder="اكتب دعاءك هنا..."
+              className="w-full h-48 bg-card border border-gold/20 rounded-2xl p-4 text-cream text-lg font-amiri focus-visible:ring-gold"
+              dir="rtl"
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+          <div>
+             <Label className="inline-block mb-3 font-cairo text-cream/80">نوع الدعاء</Label>
+            <RadioGroup dir="rtl" value={type} onValueChange={setType} className="flex justify-center gap-8">
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="public" id="public" className="text-gold border-gold/50" />
+                <Label htmlFor="public" className="text-cream/80">عام (للعرض على الموقع)</Label>
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <RadioGroupItem value="private" id="private" className="text-gold border-gold/50" />
+                <Label htmlFor="private" className="text-cream/80">خاص</Label>
+              </div>
+            </RadioGroup>
+          </div>
           <Button 
             type="submit"
-            className="mt-8 w-full bg-gold hover:bg-gold-light text-navy font-bold py-6 rounded-xl text-lg"
+            className="mt-4 w-full bg-gold hover:bg-gold-light text-navy font-bold py-6 rounded-xl text-lg"
             disabled={isSubmitting}
           >
             <Send className="w-5 h-5 ml-2" /> 
-            <span>{isSubmitting ? 'جار الإرسال...' : 'إرسال'}</span>
+            <span>{isSubmitting ? 'جار الإرسال...' : 'إرسال الدعاء'}</span>
           </Button>
         </form>
       </div>

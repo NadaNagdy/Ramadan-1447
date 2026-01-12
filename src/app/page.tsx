@@ -24,8 +24,8 @@ export default function Home() {
         </div>
         <div className="text-center max-w-4xl mx-auto animate-fade-in">
           <CrescentMoon className="w-20 h-20 text-gold mx-auto mb-6 glow-gold animate-float [animation-duration:8s]" />
-          <h1 className="font-amiri text-4xl md:text-6xl text-cream mb-4">أدعية رمضان</h1>
-          <p className="font-amiri text-xl md:text-2xl text-gold/80 mb-8">رفيقك اليومي في شهر الخير</p>
+          <h1 className="font-amiri text-4xl md:text-6xl text-cream mb-4">أدعية رمضان – 30 يوم</h1>
+          <p className="font-amiri text-xl md:text-2xl text-gold/80 mb-8">مساحة هادئة للتأمل والدعاء والمشاركة</p>
           <DecorativeDivider className="my-8" />
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href={`/daily-duas/${today}`} className="flex items-center gap-3 bg-gold hover:bg-gold-light text-primary-foreground px-8 py-3 rounded-full font-bold transition-transform hover:scale-105 shadow-lg">
@@ -41,7 +41,7 @@ export default function Home() {
       <section className="py-16 px-4 bg-purple-deep/30 backdrop-blur-sm">
         <div className="container mx-auto max-w-3xl">
           <h2 className="font-amiri text-3xl text-center text-cream mb-8">دعاء اليوم</h2>
-          <DuaCard day={todayDua.day} title={todayDua.arabicTitle} dua={todayDua.dua} />
+          <DuaCard day={todayDua.day} title={todayDua.arabicTitle} dua={todayDua.dua} audioUrl={todayDua.audioUrl} />
         </div>
       </section>
     </div>

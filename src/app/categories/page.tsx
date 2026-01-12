@@ -42,7 +42,7 @@ export default function CategoriesPage() {
             {categoryDuas[activeCategory]?.map((dua, index) => (
               <DuaCard 
                 key={index} 
-                title={`دعاء ${index + 1}`} 
+                title={`${categories.find(c => c.id === activeCategory)?.arabicName || ''} ${index + 1}`} 
                 dua={dua}
                 showActions={true}
               />

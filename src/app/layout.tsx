@@ -5,8 +5,8 @@ import Footer from '@/components/footer';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'أدعية رمضان',
-  description: 'رفيقك في رمضان لمجموعة من الأدعية اليومية والمصنفة.',
+  title: 'أدعية رمضان – 30 يوم',
+  description: 'مساحة هادئة للتأمل والدعاء والمشاركة',
 };
 
 export default function RootLayout({
