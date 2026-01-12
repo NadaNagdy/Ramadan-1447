@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Loader2, Wand2 } from 'lucide-react';
-import { generateCategoryDua } from '@/ai/flows/generate-category-dua-flow';
+import { generateCategoryDuas } from '@/ai/flows/generate-category-duas-flow';
 import { useToast } from '@/hooks/use-toast';
 
 const categoryLinks: Record<string, string> = {
@@ -31,16 +31,16 @@ export default function CategoriesPage() {
     
     setIsGenerating(true);
     try {
-      const { dua } = await generateCategoryDua({ categoryName: currentCategory.arabicName });
+      const { duas } = await generateCategoryDuas({ categoryName: currentCategory.arabicName });
       
       setCategoryDuas(prev => ({
         ...prev,
-        [activeCategory]: [dua, ...(prev[activeCategory] || [])]
+        [activeCategory]: [...duas, ...(prev[activeCategory] || [])]
       }));
 
       toast({
-        title: "تم إنشاء دعاء جديد",
-        description: `تمت إضافة دعاء جديد لقسم "${currentCategory.arabicName}".`,
+        title: "تم إنشاء أدعية جديدة",
+        description: `تمت إضافة أدعية جديدة لقسم "${currentCategory.arabicName}".`,
       });
 
     } catch (error) {
@@ -48,7 +48,7 @@ export default function CategoriesPage() {
       toast({
         variant: "destructive",
         title: "حدث خطأ",
-        description: "لم نتمكن من إنشاء دعاء جديد. يرجى المحاولة مرة أخرى.",
+        description: "لم نتمكن من إنشاء أدعية جديدة. يرجى المحاولة مرة أخرى.",
       });
     } finally {
       setIsGenerating(false);
@@ -107,7 +107,7 @@ export default function CategoriesPage() {
           <div className="text-center mb-8">
             <Button onClick={handleGenerateDua} disabled={isGenerating} className="bg-gold/10 text-gold hover:bg-gold/20">
               {isGenerating ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Wand2 className="ml-2 h-4 w-4" />}
-              اكتشف دعاءً جديداً لهذا القسم
+              اكتشف أدعية جديدة لهذا القسم
             </Button>
           </div>
         )}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { CrescentMoon, FloatingStars, Lantern, DecorativeDivider } from '@/components/islamic-decorations';
-import { Calendar, Heart, BookOpen, User, Moon, RefreshCw, Star, Sparkles } from 'lucide-react';
+import { Calendar, Heart, BookOpen, User, Moon, RefreshCw, Star, Sparkles, MoonStar } from 'lucide-react';
 import { getRamadanDay } from '@/lib/date-helper';
 import { generateReflection, type GenerateReflectionOutput } from '@/ai/flows/generate-reflection-flow';
 import { Card, CardContent } from '@/components/ui/card';
@@ -95,7 +95,7 @@ export default function Home() {
             href="/laylat-al-qadr" 
             className="group flex flex-col items-center justify-center gap-3 bg-card border border-gold/40 text-gold p-6 rounded-[30px] font-bold hover:bg-gold hover:text-navy transition-all transform hover:scale-105 shadow-xl"
           >
-            <Moon className="w-8 h-8" />
+            <MoonStar className="w-8 h-8" />
             <span className="text-xl">ليلة القدر</span>
           </Link>
 
@@ -116,11 +116,11 @@ export default function Home() {
           </Link>
           
           <Link 
-            href="/share" 
+            href="/ai-dua" 
             className="group flex flex-col items-center justify-center gap-3 border-2 border-gold/20 bg-card/20 text-cream/80 p-6 rounded-[30px] font-bold hover:border-gold transition-all transform hover:scale-105 shadow-xl"
           >
             <Heart className="w-8 h-8 group-hover:fill-gold transition-all" />
-            <span className="text-xl">شارك دعاءك</span>
+            <span className="text-xl">اصنع دعاءك</span>
           </Link>
         </div>
 

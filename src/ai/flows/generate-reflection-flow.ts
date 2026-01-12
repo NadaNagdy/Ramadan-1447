@@ -19,26 +19,25 @@ export async function generateReflection(): Promise<GenerateReflectionOutput> {
   return generateReflectionFlow();
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateReflectionPrompt',
-  output: { schema: GenerateReflectionOutputSchema },
-  prompt: `You are a wise and eloquent spiritual guide.
-Your task is to generate a single, short (about 2-3 sentences), and inspiring spiritual reflection about Ramadan in Arabic.
-The reflection should be heartfelt, uplifting, and encourage contemplation.
-Do not add any preamble or explanation, just provide the final reflection.
-`,
-  model: googleAI.model('gemini-1.5-flash-latest'),
-  config: {
-    temperature: 0.9,
-  },
-});
-
 const generateReflectionFlow = ai.defineFlow(
   {
     name: 'generateReflectionFlow',
     outputSchema: GenerateReflectionOutputSchema,
   },
   async () => {
+    const randomTopics = ["الصبر", "الامتنان", "التقوى", "الرحمة", "التسامح", "الإخلاص", "بر الوالدين", "قيام الليل"];
+    const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+
+    const prompt = ai.definePrompt({
+      name: 'generateReflectionPrompt',
+      output: { schema: GenerateReflectionOutputSchema },
+      prompt: `أعطني تأملاً روحانياً قصيراً وملهماً عن ${randomTopic} في شهر رمضان المبارك باللغة العربية. اجعل النص عميقاً ومؤثراً ولا يتجاوز ٢٠٠ حرف.`,
+      model: googleAI.model('gemini-1.5-flash-latest'),
+      config: {
+        temperature: 0.9,
+      },
+    });
+
     const { output } = await prompt();
     return output!;
   }
