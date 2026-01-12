@@ -148,7 +148,7 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
   const showAudioPlayer = showActions && (audioUrl || true); // Always show if showActions is true
 
   return (
-    <div className="group relative bg-card-gradient rounded-2xl p-6 md:p-8 border border-gold/20 hover:border-gold/40 transition-all duration-300 shadow-lg">
+    <div className="group relative bg-card-gradient rounded-3xl p-6 md:p-8 border border-gold/20 hover:border-gold/40 transition-all duration-300 shadow-lg">
       {day && (
         <div className="absolute -top-4 right-6 bg-gold text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold shadow-md">
           {title}
