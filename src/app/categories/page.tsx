@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { categories, categoryDuas } from '@/lib/duas';
+import { categories, categoryDuas as initialCategoryDuas } from '@/lib/duas';
 import { FloatingStars, DecorativeDivider, CrescentMoon } from '@/components/islamic-decorations';
 import DuaCard from '@/components/dua-card';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Loader2, Wand2 } from 'lucide-react';
+import { generateCategoryDua } from '@/ai/flows/generate-category-dua-flow';
+import { useToast } from '@/hooks/use-toast';
 
 const categoryLinks: Record<string, string> = {
   'laylat-al-qadr': '/laylat-al-qadr',
@@ -15,6 +19,41 @@ const categoryLinks: Record<string, string> = {
 
 export default function CategoriesPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(categories[0].id);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [categoryDuas, setCategoryDuas] = useState(initialCategoryDuas);
+  const { toast } = useToast();
+
+  const handleGenerateDua = async () => {
+    if (!activeCategory || categoryLinks[activeCategory]) return;
+
+    const currentCategory = categories.find(c => c.id === activeCategory);
+    if (!currentCategory) return;
+    
+    setIsGenerating(true);
+    try {
+      const { dua } = await generateCategoryDua({ categoryName: currentCategory.arabicName });
+      
+      setCategoryDuas(prev => ({
+        ...prev,
+        [activeCategory]: [dua, ...(prev[activeCategory] || [])]
+      }));
+
+      toast({
+        title: "تم إنشاء دعاء جديد",
+        description: `تمت إضافة دعاء جديد لقسم "${currentCategory.arabicName}".`,
+      });
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "حدث خطأ",
+        description: "لم نتمكن من إنشاء دعاء جديد. يرجى المحاولة مرة أخرى.",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const renderCategoryButton = (cat: typeof categories[0]) => {
     const link = categoryLinks[cat.id];
@@ -34,7 +73,7 @@ export default function CategoriesPage() {
 
     if (link) {
       return (
-        <Link href={link} key={cat.id} className={buttonClasses}>
+        <Link href={link} key={cat.id} className={buttonClasses} onClick={() => setActiveCategory(cat.id)}>
           {buttonContent}
         </Link>
       );
@@ -51,6 +90,8 @@ export default function CategoriesPage() {
     );
   }
 
+  const activeCategoryInfo = categories.find(c => c.id === activeCategory);
+
   return (
     <div className="min-h-screen bg-hero-gradient pt-24 pb-16 px-4">
       <FloatingStars />
@@ -62,6 +103,15 @@ export default function CategoriesPage() {
           {categories.map(renderCategoryButton)}
         </div>
 
+        {activeCategoryInfo && !categoryLinks[activeCategoryInfo.id] && (
+          <div className="text-center mb-8">
+            <Button onClick={handleGenerateDua} disabled={isGenerating} className="bg-gold/10 text-gold hover:bg-gold/20">
+              {isGenerating ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <Wand2 className="ml-2 h-4 w-4" />}
+              اكتشف دعاءً جديداً لهذا القسم
+            </Button>
+          </div>
+        )}
+
         {activeCategory && !categoryLinks[activeCategory] && (
           <div className="space-y-6 text-left">
             <h2 className="font-amiri text-2xl text-gold text-center mb-4">
@@ -69,7 +119,7 @@ export default function CategoriesPage() {
             </h2>
             {categoryDuas[activeCategory]?.map((dua, index) => (
               <DuaCard 
-                key={index} 
+                key={`${activeCategory}-${index}`} 
                 title={`${categories.find(c => c.id === activeCategory)?.arabicName || ''} ${index + 1}`} 
                 dua={dua}
                 showActions={true}

@@ -17,7 +17,9 @@ const RephraseDuaInputSchema = z.object({
 export type RephraseDuaInput = z.infer<typeof RephraseDuaInputSchema>;
 
 const RephraseDuaOutputSchema = z.object({
-  dua: z.string().describe('The rephrased, eloquent, and beautiful Arabic Dua.'),
+  duaText: z.string().describe('The final, eloquent, and beautiful Arabic Dua, crafted in the style of traditional "ad\'iyah ma\'thurah".'),
+  simplifiedMeaning: z.string().describe('A simple, one-sentence explanation of what the Dua means.'),
+  spiritualTouch: z.string().describe('A short, uplifting spiritual reminder or reflection related to the Dua, to touch the user\'s heart.'),
 });
 export type RephraseDuaOutput = z.infer<typeof RephraseDuaOutputSchema>;
 
@@ -30,13 +32,12 @@ const prompt = ai.definePrompt({
   input: { schema: RephraseDuaInputSchema },
   output: { schema: RephraseDuaOutputSchema },
   prompt: `You are an expert in Islamic supplications (Dua) and a master of the Arabic language.
-Your task is to take a user's intention, written in everyday Arabic, and transform it into a beautiful, eloquent, and religiously appropriate Dua.
+Your task is to take a user's intention, written in everyday Arabic, and transform it into a beautiful, eloquent, and religiously appropriate Dua, following the structure below.
 The Dua should be heartfelt, respectful, and use classical Arabic phrasing where suitable, but remain clear and understandable.
-Do not add any preamble or explanation, just provide the final Dua.
 
 User's Intention: {{{intention}}}
 `,
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.5-flash-latest'),
   config: {
     temperature: 0.8,
   },

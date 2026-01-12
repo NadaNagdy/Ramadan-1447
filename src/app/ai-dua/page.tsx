@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react';
 import { FloatingStars, CrescentMoon, DecorativeDivider } from '@/components/islamic-decorations';
-import { Wand2, Loader2, Copy } from 'lucide-react';
+import { Wand2, Loader2, Copy, Sparkles, BookOpen, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { rephraseDua } from '@/ai/flows/rephrase-dua-flow';
+import { rephraseDua, type RephraseDuaOutput } from '@/ai/flows/rephrase-dua-flow';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function AiDuaPage() {
   const [intention, setIntention] = useState('');
-  const [generatedDua, setGeneratedDua] = useState('');
+  const [generatedDua, setGeneratedDua] = useState<RephraseDuaOutput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
@@ -27,16 +27,16 @@ export default function AiDuaPage() {
       return;
     }
     setIsGenerating(true);
-    setGeneratedDua('');
+    setGeneratedDua(null);
     try {
-      const { dua } = await rephraseDua({ intention });
-      setGeneratedDua(dua);
+      const result = await rephraseDua({ intention });
+      setGeneratedDua(result);
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
         title: "حدث خطأ",
-        description: "لم نتمكن من إنشاء الدعاء، يرجى المحاولة مرة أخرى.",
+        description: "لم نتمكن من إنشاء الدعاء، يرجى التأكد من إعدادات مفتاح API والمحاولة مرة أخرى.",
       });
     } finally {
       setIsGenerating(false);
@@ -44,10 +44,11 @@ export default function AiDuaPage() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(generatedDua).then(() => {
+    if (!generatedDua) return;
+    navigator.clipboard.writeText(generatedDua.duaText).then(() => {
       toast({
         title: "تم النسخ",
-        description: "تم نسخ الدعاء إلى الحافظة.",
+        description: "تم نسخ نص الدعاء إلى الحافظة.",
       });
     });
   };
@@ -58,7 +59,7 @@ export default function AiDuaPage() {
       <div className="container mx-auto max-w-2xl text-center animate-fade-in">
         <CrescentMoon className="w-16 h-16 text-gold mx-auto mb-4" />
         <h1 className="font-amiri text-4xl text-cream mb-2">دعاء بالذكاء الاصطناعي</h1>
-        <p className="text-cream/60 mb-6">اكتب نيتك ودع الذكاء الاصطناعي يصوغ لك دعاءً بليغاً</p>
+        <p className="text-cream/60 mb-6">اكتب نيتك ودع الذكاء الاصطناعي يصوغ لك دعاءً بليغاً ومؤثراً</p>
         <DecorativeDivider className="mb-8" />
         
         <form onSubmit={handleGenerate} className="space-y-6 text-right">
@@ -95,28 +96,40 @@ export default function AiDuaPage() {
           </Button>
         </form>
 
-        {(isGenerating || generatedDua) && (
-          <div className="mt-12">
-            <h2 className="font-amiri text-2xl text-gold mb-4">الدعاء المصاغ</h2>
-            <Card className="bg-card-gradient border-gold/20 text-cream text-lg md:text-xl font-amiri leading-relaxed text-center">
+        {isGenerating && !generatedDua && (
+           <div className="mt-12">
+            <div className="flex items-center justify-center h-48 bg-card-gradient border-gold/20 text-cream rounded-2xl">
+                <Loader2 className="w-8 h-8 text-gold/50 animate-spin" />
+            </div>
+          </div>
+        )}
+
+        {generatedDua && (
+          <div className="mt-12 space-y-4 text-right">
+             <Card className="bg-card-gradient border-gold/20 text-cream text-xl md:text-2xl font-amiri leading-relaxed text-center">
               <CardContent className="p-6">
-                {isGenerating && !generatedDua && (
-                    <div className="flex items-center justify-center h-24">
-                        <Loader2 className="w-8 h-8 text-gold/50 animate-spin" />
-                    </div>
-                )}
-                {generatedDua && (
-                  <>
-                    <p className="whitespace-pre-line">{generatedDua}</p>
-                    <div className="mt-6 pt-4 border-t border-gold/10">
-                      <Button variant="ghost" onClick={handleCopy} className="flex items-center gap-2 text-cream/70 hover:text-gold transition-colors">
-                        <Copy className="w-5 h-5" />
-                        <span>نسخ الدعاء</span>
-                      </Button>
-                    </div>
-                  </>
-                )}
+                <p className="whitespace-pre-line">{generatedDua.duaText}</p>
+                 <div className="mt-6 pt-4 border-t border-gold/10 flex justify-center">
+                  <Button variant="ghost" onClick={handleCopy} className="flex items-center gap-2 text-cream/70 hover:text-gold transition-colors">
+                    <Copy className="w-5 h-5" />
+                    <span>نسخ الدعاء</span>
+                  </Button>
+                </div>
               </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 border-gold/10">
+                <CardContent className="p-4">
+                  <h3 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2"><BookOpen className="w-5 h-5" /><span>المعنى المبسط</span></h3>
+                  <p className="font-cairo text-cream/80">{generatedDua.simplifiedMeaning}</p>
+                </CardContent>
+            </Card>
+
+             <Card className="bg-card/50 border-gold/10">
+                <CardContent className="p-4">
+                  <h3 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2"><Sparkles className="w-5 h-5" /><span>لمسة روحانية</span></h3>
+                  <p className="font-cairo text-cream/80">{generatedDua.spiritualTouch}</p>
+                </CardContent>
             </Card>
           </div>
         )}
