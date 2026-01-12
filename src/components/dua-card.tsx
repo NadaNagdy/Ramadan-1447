@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Share2, Heart, Play, Pause, RotateCcw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Share2, Heart, Play, Pause, RotateCcw, Image as ImageIcon } from 'lucide-react';
 import { DecorativeDivider } from './islamic-decorations';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
 
 interface DuaCardProps {
   day?: number;
@@ -12,14 +14,16 @@ interface DuaCardProps {
   dua: string;
   audioUrl?: string;
   showActions?: boolean;
+  showShareImageButton?: boolean;
 }
 
-const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showActions = true }) => {
+const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showActions = true, showShareImageButton = false }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleShare = () => {
     const shareText = `${title}\n\n${dua}`;
@@ -33,6 +37,12 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
         });
       });
     }
+  };
+
+  const handleShareImage = () => {
+    const encodedDua = encodeURIComponent(dua);
+    const encodedTitle = encodeURIComponent(title);
+    router.push(`/generate-card?dua=${encodedDua}&title=${encodedTitle}`);
   };
 
   const togglePlay = () => {
@@ -108,14 +118,23 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
         </>
       )}
 
-      {showActions && (
-        <div className={cn("flex items-center justify-center gap-6", audioUrl ? "mt-6" : "mt-6 pt-6 border-t border-gold/10")}>
-          <button onClick={handleShare} className="flex items-center gap-2 text-cream/60 hover:text-gold transition-colors">
-            <Share2 className="w-5 h-5" /> <span>مشاركة</span>
-          </button>
-          <button onClick={() => setIsSaved(!isSaved)} className={`flex items-center gap-2 transition-colors ${isSaved ? 'text-gold' : 'text-cream/60 hover:text-gold'}`}>
-            <Heart className={`w-5 h-5 transition-all ${isSaved ? 'fill-current' : ''}`} /> <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
-          </button>
+      {(showActions || showShareImageButton) && (
+        <div className={cn("flex items-center justify-center gap-4 flex-wrap", audioUrl ? "mt-6" : "mt-6 pt-6 border-t border-gold/10")}>
+          {showActions && (
+            <>
+              <Button variant="ghost" onClick={handleShare} className="flex items-center gap-2 text-cream/60 hover:text-gold transition-colors">
+                <Share2 className="w-5 h-5" /> <span>مشاركة النص</span>
+              </Button>
+              <Button variant="ghost" onClick={() => setIsSaved(!isSaved)} className={`flex items-center gap-2 transition-colors ${isSaved ? 'text-gold' : 'text-cream/60 hover:text-gold'}`}>
+                <Heart className={`w-5 h-5 transition-all ${isSaved ? 'fill-current' : ''}`} /> <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
+              </Button>
+            </>
+          )}
+          {showShareImageButton && (
+            <Button onClick={handleShareImage} className="bg-gold/10 text-gold hover:bg-gold/20 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" /> <span>مشاركة كبطاقة</span>
+            </Button>
+          )}
         </div>
       )}
     </div>

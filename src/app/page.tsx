@@ -4,9 +4,10 @@ import { Calendar, Heart } from 'lucide-react';
 import DuaCard from '@/components/dua-card';
 import { dailyDuas } from '@/lib/duas';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { getRamadanDay } from '@/lib/date-helper';
 
 export default function Home() {
-  const today = 1; 
+  const today = getRamadanDay();
   const todayDua = dailyDuas.find(d => d.day === today) || dailyDuas[0];
   const heroImage = PlaceHolderImages.find(p => p.id === 'ramadan-hero');
 
@@ -17,10 +18,10 @@ export default function Home() {
       <FloatingStars />
       <section className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4">
         <div className="absolute top-24 right-8 opacity-20 hidden md:block">
-          <Lantern className="w-16 h-16 text-gold animate-float lantern-glow" />
+          <Lantern className="w-24 h-24 text-gold animate-float lantern-glow" />
         </div>
         <div className="absolute bottom-24 left-8 opacity-20 hidden md:block">
-          <Lantern className="w-12 h-12 text-gold animate-float [animation-delay:-3s] lantern-glow" />
+          <Lantern className="w-16 h-16 text-gold animate-float [animation-delay:-3s] lantern-glow" />
         </div>
         <div className="text-center max-w-4xl mx-auto animate-fade-in">
           <CrescentMoon className="w-20 h-20 text-gold mx-auto mb-6 glow-gold animate-float [animation-duration:8s]" />
@@ -41,7 +42,13 @@ export default function Home() {
       <section className="py-16 px-4 bg-purple-deep/30 backdrop-blur-sm">
         <div className="container mx-auto max-w-3xl">
           <h2 className="font-amiri text-3xl text-center text-cream mb-8">دعاء اليوم</h2>
-          <DuaCard day={todayDua.day} title={todayDua.arabicTitle} dua={todayDua.dua} audioUrl={todayDua.audioUrl} />
+          <DuaCard 
+            day={todayDua.day} 
+            title={todayDua.arabicTitle} 
+            dua={todayDua.dua} 
+            audioUrl={todayDua.audioUrl} 
+            showShareImageButton={true}
+          />
         </div>
       </section>
     </div>
