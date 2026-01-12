@@ -29,7 +29,7 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
   const { toast } = useToast();
   const router = useRouter();
 
-  const effectiveAudioUrl = audioUrl || generatedAudioUrl;
+  const effectiveAudioUrl = generatedAudioUrl || audioUrl;
 
   const handleShare = () => {
     const shareText = `${title}\n\n${dua}`;
@@ -128,15 +128,24 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('ended', handleEnded);
 
+    // Reset state if dua changes
+    setIsPlaying(false);
+    setProgress(0);
+    setGeneratedAudioUrl(null);
+    if(audio.src) {
+      audio.pause();
+      audio.removeAttribute('src');
+    }
+
     return () => {
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, []);
+  }, [dua]);
 
-  const showAudioPlayer = showActions || audioUrl;
+  const showAudioPlayer = showActions && (audioUrl || true); // Always show if showActions is true
 
   return (
     <div className="group relative bg-card-gradient rounded-2xl p-6 md:p-8 border border-gold/20 hover:border-gold/40 transition-all duration-300 shadow-lg">
@@ -145,7 +154,7 @@ const DuaCard: React.FC<DuaCardProps> = ({ day, title, dua, audioUrl, showAction
           {title}
         </div>
       )}
-      <h3 className={cn("font-amiri text-2xl lg:text-3xl text-gold mb-4", day ? "mt-4" : "")}>{day ? `دعاء اليوم ${day}` : title}</h3>
+      <h3 className={cn("font-amiri text-2xl lg:text-3xl text-gold mb-4 text-center", day ? "mt-4" : "")}>{day ? `دعاء اليوم ${day}` : title}</h3>
       <DecorativeDivider className="my-4" />
       <p className="font-amiri text-cream text-lg md:text-xl leading-relaxed text-center whitespace-pre-line">{dua}</p>
       

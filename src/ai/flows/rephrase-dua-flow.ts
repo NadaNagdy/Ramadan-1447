@@ -10,7 +10,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/google-genai';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const RephraseDuaInputSchema = z.object({
   intention: z.string().describe("The user's intention or what they want to pray for. This will be in Arabic."),
@@ -33,8 +32,8 @@ const prompt = ai.definePrompt({
   input: { schema: RephraseDuaInputSchema },
   output: { schema: RephraseDuaOutputSchema },
   prompt: `You are an expert in Islamic supplications (Dua) and a master of the Arabic language.
-Your task is to take a user's intention, written in everyday Arabic, and transform it into a beautiful, eloquent, and religiously appropriate Dua.
-You must also provide its meaning in simple Arabic and a brief spiritual reflection.
+Your task is to take a user's intention, written in everyday Arabic, and transform it into a beautiful, eloquent, and religiously appropriate Dua in the style of "ad'iyah ma'thurah".
+You must also provide a simple explanation of its meaning and a brief, uplifting spiritual reflection related to it.
 Output MUST be valid JSON.
 
 User's Intention: {{{intention}}}

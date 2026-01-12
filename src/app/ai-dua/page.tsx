@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FloatingStars, CrescentMoon, DecorativeDivider } from '@/components/islamic-decorations';
-import { Wand2, Loader2, Copy, Sparkles, BookOpen, Heart } from 'lucide-react';
+import { FloatingStars, DecorativeDivider, Lantern } from '@/components/islamic-decorations';
+import { Send, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { rephraseDua, type RephraseDuaOutput } from '@/ai/flows/rephrase-dua-flow';
-import { Card, CardContent } from '@/components/ui/card';
+import DuaCard from '@/components/dua-card';
 
 export default function AiDuaPage() {
   const [intention, setIntention] = useState('');
@@ -42,97 +41,90 @@ export default function AiDuaPage() {
       setIsGenerating(false);
     }
   };
-
-  const handleCopy = () => {
-    if (!generatedDua) return;
-    navigator.clipboard.writeText(generatedDua.duaText).then(() => {
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ نص الدعاء إلى الحافظة.",
-      });
-    });
+  
+  const handleReset = () => {
+    setGeneratedDua(null);
+    setIntention('');
   };
 
   return (
-    <div className="min-h-screen bg-hero-gradient pt-32 pb-16 px-4">
+    <div className="min-h-screen bg-hero-gradient pt-32 pb-20 px-4">
       <FloatingStars />
-      <div className="container mx-auto max-w-2xl text-center animate-fade-in">
-        <CrescentMoon className="w-16 h-16 text-gold mx-auto mb-4" />
-        <h1 className="font-amiri text-4xl text-cream mb-2">دعاء بالذكاء الاصطناعي</h1>
-        <p className="text-cream/60 mb-6">اكتب نيتك ودع الذكاء الاصطناعي يصوغ لك دعاءً بليغاً ومؤثراً</p>
-        <DecorativeDivider className="mb-8" />
-        
-        <form onSubmit={handleGenerate} className="space-y-6 text-right">
-          <div>
-            <Label htmlFor="intention" className="inline-block mb-2 font-cairo text-cream/80">نيتك أو طلبك</Label>
+      <div className="max-w-3xl mx-auto relative z-10 animate-fade-in">
+        <div className="text-center mb-12">
+          <div className="inline-block p-4 bg-gold/10 rounded-full mb-4 animate-float">
+            <Sparkles className="w-10 h-10 text-gold" />
+          </div>
+          <h1 className="font-amiri text-4xl md:text-5xl font-bold text-gold mb-4">تهادوا الحب غيباً بالدعاء</h1>
+          <p className="text-cream/70 text-lg">
+            اكتب حاجتك أو لمن تحب بصدق، وسيقوم النظام بصياغة دعاء مأثور ومناسب ببركة هذا الشهر
+          </p>
+        </div>
+
+        <form onSubmit={handleGenerate} className="mb-12">
+          <div className="relative group">
             <Textarea
-              id="intention"
               value={intention}
               onChange={(e) => setIntention(e.target.value)}
-              placeholder="مثال: أتمنى الشفاء العاجل لأمي وأن يحفظها الله..."
-              className="w-full h-36 bg-card border border-gold/20 rounded-2xl p-4 text-cream text-lg font-cairo focus-visible:ring-gold"
+              placeholder="مثلاً: أدعو بالشفاء لصديق، أو بالسكينة في قلبي، أو بالنجاح في عملي..."
+              className="w-full h-40 bg-card border border-gold/30 rounded-3xl p-6 text-cream text-lg focus:outline-none focus:border-gold transition-all resize-none shadow-inner"
               dir="rtl"
               disabled={isGenerating}
-              required
             />
+            <Button
+              type="submit"
+              disabled={isGenerating || !intention.trim()}
+              className="absolute bottom-4 left-4 bg-gold text-navy px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-gold-light transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            >
+              {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {isGenerating ? "جاري الصياغة..." : "صياغة الدعاء"}
+            </Button>
           </div>
-          
-          <Button 
-            type="submit"
-            className="mt-4 w-full bg-gold hover:bg-gold-light text-navy font-bold py-6 rounded-xl text-lg"
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 ml-2 animate-spin" /> 
-                <span>جاري الصياغة...</span>
-              </>
-            ) : (
-              <>
-                <Wand2 className="w-5 h-5 ml-2" /> 
-                <span>صياغة الدعاء</span>
-              </>
-            )}
-          </Button>
         </form>
 
-        {isGenerating && !generatedDua && (
-           <div className="mt-12">
-            <div className="flex items-center justify-center h-48 bg-card-gradient border-gold/20 text-cream rounded-2xl">
-                <Loader2 className="w-8 h-8 text-gold/50 animate-spin" />
+        {generatedDua && !isGenerating && (
+          <div className="animate-fade-in space-y-8">
+            <DecorativeDivider />
+            <DuaCard 
+              title="الدعاء المصاغ" 
+              dua={generatedDua.duaText} 
+              showActions={false}
+              showShareImageButton={true}
+            />
+            
+            <div className="bg-gold/10 border border-gold/20 rounded-3xl p-8">
+               <h4 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2">
+                <Sparkles className="w-5 h-5" />
+                <span>المعنى المبسط</span>
+              </h4>
+              <p className="font-cairo text-cream/80 text-right">{generatedDua.simplifiedMeaning}</p>
             </div>
+            
+            <div className="bg-gold/10 border border-gold/20 rounded-3xl p-8">
+              <h4 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2">
+                <Sparkles className="w-5 h-5" />
+                لمسة روحانية
+              </h4>
+              <p className="text-cream/80 leading-relaxed italic font-amiri text-xl text-right">
+                {generatedDua.spiritualTouch}
+              </p>
+            </div>
+
+            <Button 
+              onClick={handleReset}
+              variant="outline"
+              className="w-full py-6 border-2 border-dashed border-gold/30 rounded-2xl text-gold hover:bg-gold/5 hover:text-gold transition-all flex items-center justify-center gap-2 text-lg"
+            >
+              <RefreshCw className="w-5 h-5" />
+              صياغة دعاء جديد
+            </Button>
           </div>
         )}
 
-        {generatedDua && (
-          <div className="mt-12 space-y-4 text-right">
-             <Card className="bg-card-gradient border-gold/20 text-cream text-xl md:text-2xl font-amiri leading-relaxed text-center">
-              <CardContent className="p-6">
-                <p className="whitespace-pre-line">{generatedDua.duaText}</p>
-                 <div className="mt-6 pt-4 border-t border-gold/10 flex justify-center">
-                  <Button variant="ghost" onClick={handleCopy} className="flex items-center gap-2 text-cream/70 hover:text-gold transition-colors">
-                    <Copy className="w-5 h-5" />
-                    <span>نسخ الدعاء</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card/50 border-gold/10">
-                <CardContent className="p-4">
-                  <h3 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2"><BookOpen className="w-5 h-5" /><span>المعنى المبسط</span></h3>
-                  <p className="font-cairo text-cream/80">{generatedDua.simplifiedMeaning}</p>
-                </CardContent>
-            </Card>
-
-             <Card className="bg-card/50 border-gold/10">
-                <CardContent className="p-4">
-                  <h3 className="font-amiri text-lg text-gold flex items-center gap-2 justify-end mb-2"><Sparkles className="w-5 h-5" /><span>لمسة روحانية</span></h3>
-                  <p className="font-cairo text-cream/80">{generatedDua.spiritualTouch}</p>
-                </CardContent>
-            </Card>
-          </div>
-        )}
+        <div className="mt-20 opacity-30 pointer-events-none flex justify-center gap-20">
+          <Lantern className="w-20 h-20 text-gold animate-float" />
+          <Lantern className="w-20 h-20 text-gold animate-float" style={{ animationDelay: '1.5s' }} />
+        </div>
       </div>
     </div>
   );
