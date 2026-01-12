@@ -16,14 +16,22 @@ const Navigation: React.FC = () => {
     { path: '/daily-duas', label: 'أدعية الأيام' },
     { path: '/categories', label: 'أدعية بالنية' },
     { path: '/ai-dua', label: 'دعاء بالذكاء الاصطناعي' },
-    { path: '/laylat-al-qadr', label: 'ليلة القدر' },
-    { path: '/prophets-duas', label: 'أدعية الأنبياء' },
-    { path: '/quranic-duas', label: 'أدعية قرآنية' },
+    { path: '/community-duas', label: 'دعاء المشاركين' },
     { path: '/share', label: 'شارك دعاءك' },
     { path: '/about', label: 'عن الموقع' },
   ];
 
-  const isActive = (path: string) => (path === '/' ? pathname === path : pathname.startsWith(path));
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === path;
+    if (path === '/laylat-al-qadr' || path === '/prophets-duas' || path === '/quranic-duas') return false;
+    return pathname.startsWith(path);
+  };
+
+  const specialCategoryLinks = [
+    { path: '/laylat-al-qadr', label: 'ليلة القدر' },
+    { path: '/prophets-duas', label: 'أدعية الأنبياء' },
+    { path: '/quranic-duas', label: 'أدعية قرآنية' },
+  ]
 
   return (
     <nav className="fixed top-0 right-0 left-0 z-50 bg-background/80 backdrop-blur-md border-b border-gold/20">
@@ -51,14 +59,14 @@ const Navigation: React.FC = () => {
       {isOpen && (
         <div className="md:hidden bg-navy border-t border-gold/10 p-4 absolute top-full left-0 right-0">
           <div className="container mx-auto flex flex-col gap-2">
-            {navLinks.map((link) => (
+            {[...navLinks, ...specialCategoryLinks].map((link) => (
               <Link 
                 key={link.path} 
                 href={link.path} 
                 onClick={() => setIsOpen(false)} 
                 className={cn(
                   'block py-3 text-center rounded-md transition-colors',
-                  isActive(link.path) ? 'text-navy bg-gold font-semibold' : 'text-cream hover:text-gold hover:bg-gold/10'
+                  pathname.startsWith(link.path) && link.path !== '/' || pathname === link.path ? 'text-navy bg-gold font-semibold' : 'text-cream hover:text-gold hover:bg-gold/10'
                 )}
               >
                 {link.label}

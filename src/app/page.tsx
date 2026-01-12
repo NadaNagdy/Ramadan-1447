@@ -1,15 +1,26 @@
 import Link from 'next/link';
 import { CrescentMoon, FloatingStars, Lantern, DecorativeDivider } from '@/components/islamic-decorations';
-import { Calendar, Heart } from 'lucide-react';
+import { Calendar, Heart, BookOpen } from 'lucide-react';
 import DuaCard from '@/components/dua-card';
 import { dailyDuas } from '@/lib/duas';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { getRamadanDay } from '@/lib/date-helper';
+import { generateReflection } from '@/ai/flows/generate-reflection-flow';
+import { Card, CardContent } from '@/components/ui/card';
 
-export default function Home() {
+export default async function Home() {
   const today = getRamadanDay();
   const todayDua = dailyDuas.find(d => d.day === today) || dailyDuas[0];
   const heroImage = PlaceHolderImages.find(p => p.id === 'ramadan-hero');
+  
+  // AI-generated reflection - errors are handled gracefully inside the component
+  let reflectionData = null;
+  try {
+    reflectionData = await generateReflection();
+  } catch (error) {
+    console.error("Failed to generate reflection:", error);
+  }
+  const reflection = reflectionData?.reflection;
 
   return (
     <div className="flex flex-col">
@@ -40,15 +51,30 @@ export default function Home() {
       </section>
 
       <section className="py-16 px-4 bg-purple-deep/30 backdrop-blur-sm">
-        <div className="container mx-auto max-w-3xl">
-          <h2 className="font-amiri text-3xl text-center text-cream mb-8">دعاء اليوم</h2>
-          <DuaCard 
-            day={todayDua.day} 
-            title={todayDua.arabicTitle} 
-            dua={todayDua.dua} 
-            audioUrl={todayDua.audioUrl} 
-            showShareImageButton={true}
-          />
+        <div className="container mx-auto max-w-3xl space-y-12">
+          <div>
+            <h2 className="font-amiri text-3xl text-center text-cream mb-8">دعاء اليوم</h2>
+            <DuaCard 
+              day={todayDua.day} 
+              title={todayDua.arabicTitle} 
+              dua={todayDua.dua} 
+              audioUrl={todayDua.audioUrl} 
+              showShareImageButton={true}
+            />
+          </div>
+          
+          {reflection && (
+            <div>
+              <h2 className="font-amiri text-3xl text-center text-cream mb-8">تأملات رمضانية</h2>
+              <Card className="bg-card-gradient border-gold/20 text-cream text-lg md:text-xl font-amiri leading-relaxed text-center">
+                <CardContent className="p-8">
+                  <BookOpen className="w-10 h-10 text-gold/70 mx-auto mb-4" />
+                  <p className="whitespace-pre-line">{reflection}</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
         </div>
       </section>
     </div>
