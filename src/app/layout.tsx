@@ -21,7 +21,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-cairo bg-background text-foreground antialiased overflow-x-hidden">
+      <body className="font-cairo bg-background text-foreground antialiased overflow-x-hidden" suppressHydrationWarning>
         <div className="min-h-screen flex flex-col">
           <Navigation />
           <main className="flex-grow">
