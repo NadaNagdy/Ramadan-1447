@@ -108,6 +108,16 @@ export default {
         fadeIn: {
           'from': { opacity: '0', transform: 'translateY(20px)' },
           'to': { opacity: '1', transform: 'translateY(0)' },
+        },
+        bounce: {
+          '0%, 100%': {
+            transform: 'translateY(-25%)',
+            animationTimingFunction: 'cubic-bezier(0.8,0,1,1)'
+          },
+          '50%': {
+            transform: 'none',
+            animationTimingFunction: 'cubic-bezier(0,0,0.2,1)'
+          }
         }
       },
       animation: {
@@ -116,6 +126,7 @@ export default {
         'float': 'float 6s ease-in-out infinite',
         'twinkle': 'twinkle 3s ease-in-out infinite',
         'fade-in': 'fadeIn 0.8s ease-out forwards',
+        'bounce': 'bounce 1s infinite',
       },
     },
   },
