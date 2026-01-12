@@ -36,7 +36,7 @@ Do not add any preamble or explanation, just provide the final Dua.
 
 User's Intention: {{{intention}}}
 `,
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.0-pro'),
   config: {
     temperature: 0.8,
   },
