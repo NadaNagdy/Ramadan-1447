@@ -15,6 +15,7 @@ const Navigation: React.FC = () => {
     { path: '/', label: 'الرئيسية' },
     { path: '/daily-duas', label: 'أدعية الأيام' },
     { path: '/categories', label: 'أدعية بالنية' },
+    { path: '/ai-dua', label: 'دعاء بالذكاء الاصطناعي' },
     { path: '/laylat-al-qadr', label: 'ليلة القدر' },
     { path: '/prophets-duas', label: 'أدعية الأنبياء' },
     { path: '/quranic-duas', label: 'أدعية قرآنية' },
