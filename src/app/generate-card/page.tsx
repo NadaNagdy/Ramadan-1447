@@ -15,7 +15,7 @@ function CardGenerator() {
 
   const dua = searchParams.get('dua') || 'اللهم بلغنا رمضان';
   const title = searchParams.get('title') || 'دعاء';
-  const siteLink = "ramadan-duas.app"; // Replace with your actual domain
+  const siteLink = "ramadan-duas.app"; // This will be the live domain name
 
   useEffect(() => {
     const canvas = canvasRef.current;
