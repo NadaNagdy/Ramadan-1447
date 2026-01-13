@@ -1,46 +1,30 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { generateReflection } from '@/ai/flows/generate-reflection-flow';
 
-const reflections = [
-    {
-        title: "نية الصيام",
-        text: "جدد نيتك كل ليلة، فالنية هي أساس العمل. استشعر أن صيامك ليس فقط امتناعًا عن الطعام والشراب، بل هو قربة إلى الله وتهذيب للنفس."
-    },
-    {
-        title: "فضل قراءة القرآن",
-        text: "رمضان هو شهر القرآن، فاجعل لك وردًا يوميًا لا تتنازل عنه. كل حرف بحسنة، والحسنة بعشر أمثالها. تدبر الآيات واجعلها نورًا لقلبك."
-    },
-    {
-        title: "ليلة القدر",
-        text: "تحرّ ليلة القدر في العشر الأواخر، فهي خير من ألف شهر. أكثر من الدعاء فيها، خاصة دعاء \"اللهم إنك عفو تحب العفو فاعف عني\""
-    },
-    {
-        title: "صدقة رمضان",
-        text: "تصدق في رمضان، فإن أجر الصدقة فيه مضاعف. تفقد المحتاجين من حولك، وساهم في إفطار صائم، فلك مثل أجره."
-    }
-];
+const RamadanReflection = async () => {
+  const { reflection } = await generateReflection();
 
-export default function RamadanReflections() {
-    return (
-        <section className="py-12 bg-gray-100/50">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-amiri text-center font-bold text-gray-800 mb-8">تأملات رمضانية</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {reflections.map((reflection, index) => (
-                        <Card key={index} className="bg-white hover:shadow-xl transition-shadow duration-300 rounded-2xl overflow-hidden">
-                            <CardHeader className="bg-green-50">
-                                <CardTitle className="flex items-center gap-3 text-green-800 font-cairo">
-                                    <Star className="w-5 h-5 text-yellow-500" />
-                                    {reflection.title}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-6">
-                                <p className="text-gray-600 leading-relaxed font-amiri">{reflection.text}</p>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-}
+  return (
+    <section className="py-20 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="container mx-auto px-4">
+            <Card className="bg-card-gradient text-cream rounded-3xl shadow-2xl max-w-3xl mx-auto overflow-hidden border border-gold/20">
+                <CardHeader className="flex flex-row items-center justify-between p-6">
+                    <CardTitle className="flex items-center gap-3 text-2xl font-cairo text-gold">
+                        <Sparkles className="w-7 h-7 text-gold animate-pulse" />
+                        تأملات رمضانية
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="px-10 pb-10 pt-4">
+                    <p className="text-2xl font-amiri leading-relaxed text-center">
+                        {reflection}
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+    </section>
+  );
+};
+
+export default RamadanReflection;

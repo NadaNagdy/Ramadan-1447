@@ -1,5 +1,6 @@
 import HeroSection from '@/components/hero-section';
 import DuaOfTheDay from '@/components/DuaOfTheDay';
+import RamadanReflection from '@/components/ramadan-reflections';
 import { dailyDuas } from '@/lib/duas';
 import { getRamadanDay, isRamadan } from '@/lib/date-helper';
 
@@ -15,6 +16,7 @@ export default function HomePage() {
     <div className="bg-hero-gradient">
       <HeroSection />
       {duaForToday && <DuaOfTheDay dua={duaForToday} />}
+      <RamadanReflection />
     </div>
   );
 }
