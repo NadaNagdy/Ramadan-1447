@@ -78,6 +78,17 @@
   body {
     @apply bg-background text-foreground font-cairo antialiased;
   }
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--navy));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--gold));
+    border-radius: 4px;
+  }
 }
 
 @layer utilities {
@@ -86,5 +97,8 @@
   }
   .glow-gold {
     filter: drop-shadow(0 0 18px hsl(var(--gold) / 0.6));
+  }
+  .gradient-overlay {
+    background: linear-gradient(180deg, rgba(10, 17, 40, 0) 0%, rgba(10, 17, 40, 0.9) 80%);
   }
 }

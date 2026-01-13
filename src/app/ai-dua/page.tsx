@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { FloatingStars, DecorativeDivider, Lantern } from '@/components/islamic-decorations';
-import { Send, Sparkles, Loader2, RefreshCw } from 'lucide-react';
+import { Send, Sparkles, Loader2, RefreshCw, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +47,30 @@ export default function AiDuaPage() {
     setIntention('');
   };
 
+  const handleShare = () => {
+    if (!generatedDua) return;
+
+    const duaText = generatedDua.duaText;
+    const shareUrl = window.location.href;
+    const socialMedia = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(duaText)}&url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(duaText)}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(duaText + ' ' + shareUrl)}`,
+    };
+    const embedCode = `<iframe src="${shareUrl}" width="600" height="400" style="border:none;overflow:hidden;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+
+    // For simplicity, we'll just log to console and show a toast.
+    // In a real app, you'd want a nicer UI for this.
+    console.log('Share Links:', socialMedia);
+    console.log('Embed Code:', embedCode);
+
+    toast({
+      title: "مشاركة الدعاء",
+      description: "يمكنك الآن مشاركة الدعاء عبر مواقع التواصل الاجتماعي أو تضمينه في موقعك.",
+    });
+    // A more complete implementation would involve a modal to display these links.
+  };
+
   return (
     <div className="min-h-screen bg-hero-gradient pt-32 pb-20 px-4">
       <FloatingStars />
@@ -62,7 +86,7 @@ export default function AiDuaPage() {
         </div>
 
         <form onSubmit={handleGenerate} className="mb-12">
-          <div className="relative group">
+          <div className="relative group h-48">
             <Textarea
               value={intention}
               onChange={(e) => setIntention(e.target.value)}
@@ -88,7 +112,7 @@ export default function AiDuaPage() {
             <DuaCard 
               title="الدعاء المصاغ" 
               dua={generatedDua.duaText} 
-              showActions={false}
+              showActions={true}
               showShareImageButton={true}
             />
             
@@ -117,6 +141,15 @@ export default function AiDuaPage() {
             >
               <RefreshCw className="w-5 h-5" />
               صياغة دعاء جديد
+            </Button>
+
+            <Button 
+              onClick={handleShare}
+              variant="outline"
+              className="w-full py-6 border-2 border-dashed border-green-500/30 rounded-2xl text-green-500 hover:bg-green-500/5 hover:text-green-500 transition-all flex items-center justify-center gap-2 text-lg"
+            >
+              <Share2 className="w-5 h-5" />
+              مشاركة الدعاء
             </Button>
           </div>
         )}

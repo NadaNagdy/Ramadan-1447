@@ -1,21 +1,42 @@
-// This is a simplified helper. For a production app,
-// you would use a robust library to handle Islamic calendar calculations.
-const RAMADAN_2026_START_DATE = new Date('2026-02-27T00:00:00Z');
+import moment from 'moment-hijri';
 
-export function getRamadanDay(): number {
-  const now = new Date();
-  
-  // If it's before Ramadan starts, show day 1.
-  if (now < RAMADAN_2026_START_DATE) {
-    return 1;
+// Ramadan is the 9th month, but moment-hijri is 0-indexed, so it's 8.
+const RAMADAN_MONTH_INDEX = 8;
+
+/**
+ * Gets the current day of Ramadan. Returns null if it's not Ramadan.
+ */
+export function getRamadanDay(): number | null {
+  const now = moment();
+  if (now.iMonth() === RAMADAN_MONTH_INDEX) {
+    return now.iDate();
   }
+  return null;
+}
 
-  const diffTime = Math.abs(now.getTime() - RAMADAN_2026_START_DATE.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+/**
+ * Checks if the current date is within Ramadan.
+ */
+export function isRamadan(): boolean {
+  return moment().iMonth() === RAMADAN_MONTH_INDEX;
+}
 
-  if (diffDays > 30) {
-    return 30;
-  }
+/**
+ * Gets the day of the Hijri year (1-355).
+ */
+export function getHijriDayOfYear(): number {
+  const now = moment();
+  return now.iDayOfYear();
+}
 
-  return diffDays;
+/**
+ * Gets the current Hijri date components.
+ */
+export function getHijriDate(): { day: number, month: number, year: number } {
+    const now = moment();
+    return {
+        day: now.iDate(),
+        month: now.iMonth() + 1, // month is 0-indexed, so we add 1 for clarity
+        year: now.iYear()
+    };
 }

@@ -1,44 +1,64 @@
 'use server';
-/**
- * @fileOverview A flow to generate a short, inspiring Ramadan reflection.
- *
- * - generateReflection - Generates a new reflection.
- * - GenerateReflectionOutput - The return type for the function.
- */
 
-import { ai } from '@/ai/genkit';
+import { chatCompletion, extractJSON } from '@/ai/server-utils';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateReflectionOutputSchema = z.object({
-  reflection: z.string().describe('A short, eloquent, and inspiring spiritual reflection about Ramadan in Arabic.'),
+  reflection: z.string(),
 });
+
 export type GenerateReflectionOutput = z.infer<typeof GenerateReflectionOutputSchema>;
 
 export async function generateReflection(): Promise<GenerateReflectionOutput> {
-  return generateReflectionFlow();
-}
-
-const generateReflectionFlow = ai.defineFlow(
-  {
-    name: 'generateReflectionFlow',
-    outputSchema: GenerateReflectionOutputSchema,
-  },
-  async () => {
-    const randomTopics = ["الصبر", "الامتنان", "التقوى", "الرحمة", "التسامح", "الإخلاص", "بر الوالدين", "قيام الليل"];
+  try {
+    const randomTopics = [
+      "الصبر", "الامتنان", "التقوى", "الرحمة", "التسامح", 
+      "الإخلاص", "بر الوالدين", "قيام الليل", "الصدقة", 
+      "ذكر الله", "التوبة", "الدعاء"
+    ];
+    
     const randomTopic = randomTopics[Math.floor(Math.random() * randomTopics.length)];
 
-    const prompt = ai.definePrompt({
-      name: 'generateReflectionPrompt',
-      output: { schema: GenerateReflectionOutputSchema },
-      prompt: `أعطني تأملاً روحانياً قصيراً وملهماً عن ${randomTopic} في شهر رمضان المبارك باللغة العربية. اجعل النص عميقاً ومؤثراً ولا يتجاوز ٢٠٠ حرف.`,
-      model: googleAI.model('gemini-1.5-flash-latest'),
-      config: {
-        temperature: 0.9,
-      },
+    const systemPrompt = "أنت كاتب روحاني متخصص في كتابة تأملات إسلامية عميقة وملهمة عن رمضان.";
+    
+    const userPrompt = `أعطني تأملاً روحانياً قصيراً وملهماً عن ${randomTopic} في شهر رمضان المبارك باللغة العربية. 
+
+المتطلبات:
+- عميق ومؤثر
+- لا يتجاوز 200 حرف
+- يلامس القلب
+- بليغ وفصيح
+
+قدم الناتج في شكل JSON:
+{
+  \"reflection\": \"النص هنا\"
+}`;
+
+    const response = await chatCompletion(systemPrompt, userPrompt, {
+      temperature: 0.9,
+      maxTokens: 500,
     });
 
-    const { output } = await prompt();
-    return output!;
+    const parsed = extractJSON(response);
+    
+    if (parsed && parsed.reflection) {
+      return { reflection: parsed.reflection };
+    }
+
+    // Fallback: clean the response
+    const cleanText = response
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
+
+    return {
+      reflection: cleanText || `في رمضان، نجد فرصة للتقرب إلى الله والتأمل في ${randomTopic}.`
+    };
+  } catch (error) {
+    console.error('Generate Reflection Error:', error);
+    
+    return {
+      reflection: "رمضان شهر الرحمة والمغفرة، فرصة لتجديد النفس والتقرب إلى الله بالعبادة والذكر."
+    };
   }
-);
+}

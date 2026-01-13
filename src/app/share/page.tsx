@@ -1,25 +1,28 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FloatingStars, CrescentMoon, DecorativeDivider } from '@/components/islamic-decorations';
-import { Send, User, Sparkles, Loader2, CheckCircle } from 'lucide-react';
+import { Send, User, Sparkles, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { rephraseDua } from '@/ai/flows/rephrase-dua-flow';
 import { useLocalStorage } from '@/hooks/use-local-storage';
+import DuaCard from '@/components/dua-card';
+import { toPng } from 'html-to-image';
 
 export default function ShareDuaPage() {
   const [name, setName] = useState('');
   const [dua, setDua] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRephrasing, setIsRephrasing] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isShared, setIsShared] = useState(false);
   const { toast } = useToast();
   const [savedDuas, setSavedDuas] = useLocalStorage('saved_duas', []);
   const [communityDuas, setCommunityDuas] = useLocalStorage('community_duas_shared', []);
+  const duaCardRef = useRef<HTMLDivElement>(null);
 
   const handleRephrase = async () => {
     if (!dua.trim()) {
@@ -70,15 +73,12 @@ export default function ShareDuaPage() {
         amens: 0,
     };
 
-    // Save to user's personal list
     setSavedDuas((prev: any[]) => [...prev, { title: 'دعاء شخصي', dua: dua }]);
-
-    // Add to the simulated community list
     setCommunityDuas((prev: any[]) => [newDua, ...prev]);
 
     setTimeout(() => {
       setIsSubmitting(false);
-      setIsSubmitted(true);
+      setIsShared(true);
       toast({
         title: 'تمت المشاركة بنجاح!',
         description: 'شكراً لمساهمتك، جزاك الله خيراً.',
@@ -86,31 +86,49 @@ export default function ShareDuaPage() {
     }, 1000);
   };
 
-  if (isSubmitted) {
+  const handleShare = async () => {
+    if (duaCardRef.current === null) {
+      return;
+    }
+
+    const dataUrl = await toPng(duaCardRef.current);
+
+    const link = document.createElement('a');
+    link.download = 'dua-card.png';
+    link.href = dataUrl;
+    link.click();
+  };
+
+  if (isShared) {
     return (
-        <div className="min-h-screen bg-hero-gradient pt-32 pb-16 px-4 flex items-center justify-center">
+        <div className="min-h-screen bg-hero-gradient pt-32 pb-16 px-4 flex flex-col items-center justify-center">
             <FloatingStars />
-            <div className="text-center animate-fade-in max-w-lg mx-auto">
-                <CheckCircle className="w-24 h-24 text-gold mx-auto mb-6" />
-                <h1 className="font-amiri text-4xl text-cream mb-4">شكراً لمشاركتك</h1>
-                <p className="text-cream/70 text-lg mb-8">
-                    دعاؤك الآن جزء من مجتمعنا. يمكنك رؤيته في صفحة{' '}
-                    <a href="/community-duas" className="text-gold font-bold hover:underline">دعاء المشاركين</a>.
-                </p>
-                <Button onClick={() => {
-                    setIsSubmitted(false);
-                    setDua('');
-                    setName('');
-                }}
-                className="bg-gold hover:bg-gold-light text-navy font-bold py-3 px-6 rounded-xl text-lg"
-                >
-                    مشاركة دعاء آخر
-                </Button>
+            <div ref={duaCardRef}>
+              <DuaCard title="دعاء من القلب" dua={dua} author={name.trim() || 'زائر كريم'} />
             </div>
+            <h1 className="font-amiri text-4xl text-cream mb-4">شكراً لمشاركتك</h1>
+            <p className="text-cream/70 text-lg mb-8">
+                دعاؤك الآن جزء من مجتمعنا. يمكنك رؤيته في صفحة{' '}
+                <a href="/community-duas" className="text-gold font-bold hover:underline">دعاء المشاركين</a>.
+            </p>
+            <Button onClick={handleShare}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl text-lg mb-4"
+            >
+                <Share2 className="w-5 h-5 ml-2" />
+                مشاركة كصورة
+            </Button>
+            <Button onClick={() => {
+                setIsShared(false);
+                setDua('');
+                setName('');
+            }}
+            className="bg-gold hover:bg-gold-light text-navy font-bold py-3 px-6 rounded-xl text-lg"
+            >
+                مشاركة دعاء آخر
+            </Button>
         </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-hero-gradient pt-32 pb-16 px-4">
@@ -124,12 +142,12 @@ export default function ShareDuaPage() {
         <DecorativeDivider className="mb-8" />
         <form onSubmit={handleSubmit} className="space-y-6 text-right">
           <div>
-            <Label
+            <label
               htmlFor="name"
               className="inline-block mb-2 font-cairo text-cream/80"
             >
               الاسم (اختياري)
-            </Label>
+            </label>
             <div className="relative">
               <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/50" />
               <Input
@@ -144,12 +162,12 @@ export default function ShareDuaPage() {
             </div>
           </div>
           <div>
-            <Label
+            <label
               htmlFor="dua"
               className="inline-block mb-2 font-cairo text-cream/80"
             >
               نص الدعاء
-            </Label>
+            </label>
             <Textarea
               id="dua"
               value={dua}

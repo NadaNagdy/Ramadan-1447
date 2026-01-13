@@ -1,59 +1,66 @@
 'use server';
-/**
- * @fileOverview A flow to generate a new Dua for a specific category.
- *
- * - generateCategoryDuas - Generates a new Dua.
- * - GenerateCategoryDuasInput - The input type for the function.
- * - GenerateCategoryDuasOutput - The return type for the function.
- */
 
-import { ai } from '@/ai/genkit';
+import { chatCompletion, extractJSON } from '@/ai/server-utils';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
 
-const GenerateCategoryDuasInputSchema = z.object({
-  categoryName: z.string().describe('The name of the category to generate Duas for, in Arabic (e.g., "الرزق").'),
+const DuaSchema = z.object({
+  dua: z.string(),
+  transliteration: z.string().optional(),
+  meaning: z.string().optional(),
+  source: z.string().optional(),
 });
-export type GenerateCategoryDuasInput = z.infer<typeof GenerateCategoryDuasInputSchema>;
 
 const GenerateCategoryDuasOutputSchema = z.object({
-  duas: z.array(z.string()).describe('An array of 3 newly generated, short, and eloquent Arabic Duas for the given category.'),
+  duas: z.array(DuaSchema),
 });
+
 export type GenerateCategoryDuasOutput = z.infer<typeof GenerateCategoryDuasOutputSchema>;
 
-export async function generateCategoryDuas(input: GenerateCategoryDuasInput): Promise<GenerateCategoryDuasOutput> {
-  return generateCategoryDuasFlow(input);
-}
+export async function generateCategoryDuas(
+  category: string,
+  count: number = 5
+): Promise<GenerateCategoryDuasOutput> {
+  try {
+    const systemPrompt = "أنت خبير في الأدعية الإسلامية من القرآن والسنة النبوية الشريفة.";
+    
+    const userPrompt = `أعطني ${count} أدعية من القرآن أو السنة مناسبة لفئة \"${category}\".
 
-const prompt = ai.definePrompt({
-  name: 'generateCategoryDuasPrompt',
-  input: { schema: GenerateCategoryDuasInputSchema },
-  output: { schema: GenerateCategoryDuasOutputSchema },
-  prompt: `You are an expert in Islamic supplications (Dua).
-Your task is to generate 3 unique, new, short, and eloquent Duas in Arabic for the following category: {{{categoryName}}}.
-The Duas should be original and not from a well-known list. They should be concise and heartfelt.
-Return only an array of strings in JSON format.
+قدم النتيجة في شكل JSON:
+{
+  \"duas\": [
+    {
+      \"dua\": \"نص الدعاء بالعربية\",
+      \"transliteration\": \"النطق بالحروف اللاتينية\",
+      \"meaning\": \"المعنى\",
+      \"source\": \"المصدر (قرآن أو حديث)\"
+    }
+  ]
+}`;
 
-Category: {{{categoryName}}}
-`,
-  model: googleAI.model('gemini-1.5-flash-latest'),
-  config: {
-    temperature: 0.9,
-  },
-   output: {
-    format: 'json',
-    schema: GenerateCategoryDuasOutputSchema,
-  },
-});
+    const response = await chatCompletion(systemPrompt, userPrompt, {
+      temperature: 0.7,
+      maxTokens: 2048,
+    });
 
-const generateCategoryDuasFlow = ai.defineFlow(
-  {
-    name: 'generateCategoryDuasFlow',
-    inputSchema: GenerateCategoryDuasInputSchema,
-    outputSchema: GenerateCategoryDuasOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    const parsed = extractJSON(response);
+    
+    if (parsed && parsed.duas && Array.isArray(parsed.duas)) {
+      return { duas: parsed.duas };
+    }
+
+    // Fallback: try to create a single dua from response
+    return {
+      duas: [
+        {
+          dua: response,
+          transliteration: undefined,
+          meaning: undefined,
+          source: undefined,
+        }
+      ]
+    };
+  } catch (error) {
+    console.error('Generate Category Duas Error:', error);
+    throw new Error('فشل في توليد الأدعية');
   }
-);
+}

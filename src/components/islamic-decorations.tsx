@@ -6,8 +6,8 @@ export const CrescentMoon: React.FC<{ className?: string }> = ({ className = "" 
   </svg>
 );
 
-export const Lantern: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <svg className={className} viewBox="0 0 64 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+export const Lantern: React.FC<{ className?: string, style?: React.CSSProperties }> = ({ className = "", style }) => (
+  <svg className={className} style={style} viewBox="0 0 64 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M32 6C34.7614 6 37 3.76142 37 1C37 -1.76142 34.7614 -4 32 -4C29.2386 -4 27 -1.76142 27 1C27 3.76142 29.2386 6 32 6Z" />
     <path d="M42 10H22C20.8954 10 20 10.8954 20 12V16H44V12C44 10.8954 43.1046 10 42 10Z" />
     <path d="M48 20H16C13.7909 20 12 21.7909 12 24V76C12 80.4183 15.5817 84 20 84H44C48.4183 84 52 80.4183 52 76V24C52 21.7909 50.2091 20 48 20ZM38 70H26V30H38V70Z" />
@@ -16,7 +16,7 @@ export const Lantern: React.FC<{ className?: string }> = ({ className = "" }) =>
 );
 
 export const FloatingStars: React.FC = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
     <div className="absolute top-[10%] left-[10%] animate-twinkle text-gold opacity-30 text-xs">★</div>
     <div className="absolute top-[20%] right-[15%] animate-twinkle text-gold opacity-20 text-lg" style={{ animationDelay: '1s' }}>★</div>
     <div className="absolute top-[40%] left-[20%] animate-twinkle text-gold opacity-25 text-base" style={{ animationDelay: '2s' }}>★</div>

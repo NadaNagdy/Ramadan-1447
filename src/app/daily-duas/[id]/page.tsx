@@ -5,7 +5,11 @@ import DuaCard from '@/components/dua-card';
 import { FloatingStars } from '@/components/islamic-decorations';
 import { ArrowRight } from 'lucide-react';
 
-export default function DuaDetailPage({ params }: { params: { id: string } }) {
+type Props = {
+  params: { id: string };
+};
+
+export default async function DuaDetailPage({ params }: Props) {
   const day = Number(params.id);
   const dua = dailyDuas.find(d => d.day === day);
 

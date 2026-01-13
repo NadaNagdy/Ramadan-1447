@@ -1,61 +1,38 @@
-'use server';
-/**
- * @fileOverview A flow to rephrase a user's intention into an eloquent Arabic Dua.
- *
- * - rephraseDua - A function that handles the rephrasing process.
- * - RephraseDuaInput - The input type for the rephraseDua function.
- * - RephraseDuaOutput - The return type for the rephraseDua function.
- */
+import { chatCompletion, extractJSON } from '@/ai/server-utils';
 
-import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
+export async function rephraseDua({ intention }: { intention: string }) {
+  const systemPrompt =
+    "أنت خبير في صياغة الأدعية الإسلامية. مهمتك إعادة صياغة الأدعية بشكل أفضل وأكثر بلاغة.";
 
-const RephraseDuaInputSchema = z.object({
-  intention: z.string().describe("The user's intention or what they want to pray for. This will be in Arabic."),
-});
-export type RephraseDuaInput = z.infer<typeof RephraseDuaInputSchema>;
+  const userPrompt = `أعد صياغة هذا الدعاء بشكل أفضل وأكثر بلاغة:
 
-const RephraseDuaOutputSchema = z.object({
-  duaText: z.string().describe('The final, eloquent, and beautiful Arabic Dua, crafted in the style of traditional "ad\'iyah ma\'thurah".'),
-  simplifiedMeaning: z.string().describe('A simple, one-sentence explanation of what the Dua means in Arabic.'),
-  spiritualTouch: z.string().describe("A short, uplifting spiritual reminder or reflection related to the Dua, in Arabic."),
-});
-export type RephraseDuaOutput = z.infer<typeof RephraseDuaOutputSchema>;
+"${intention}"
 
-export async function rephraseDua(input: RephraseDuaInput): Promise<RephraseDuaOutput> {
-  return rephraseDuaFlow(input);
+قدم النتيجة في شكل JSON بهذا الشكل بالضبط:
+{
+  "duaText": "النص المحسن للدعاء",
+  "simplifiedMeaning": "المعنى المبسط",
+  "spiritualTouch": "اللمسة الروحانية والفوائد"
+}`;
+
+  const response = await chatCompletion(systemPrompt, userPrompt, {
+    temperature: 0.7,
+  });
+
+  const parsed = extractJSON(response);
+
+  if (parsed?.duaText) {
+    return {
+      duaText: parsed.duaText,
+      simplifiedMeaning: parsed.simplifiedMeaning ?? "دعاء محسّن",
+      spiritualTouch: parsed.spiritualTouch ?? "جزاك الله خيراً",
+    };
+  }
+
+  return {
+    duaText: response,
+    simplifiedMeaning: "دعاء محسّن بفضل الذكاء الاصطناعي",
+    spiritualTouch: "جزاك الله خيراً",
+  };
 }
 
-const prompt = ai.definePrompt({
-  name: 'rephraseDuaPrompt',
-  input: { schema: RephraseDuaInputSchema },
-  output: { schema: RephraseDuaOutputSchema },
-  prompt: `You are an expert in Islamic supplications (Dua) and a master of the Arabic language.
-Your task is to take a user's intention, written in everyday Arabic, and transform it into a beautiful, eloquent, and religiously appropriate Dua in the style of "ad'iyah ma'thurah".
-You must also provide a simple explanation of its meaning and a brief, uplifting spiritual reflection related to it.
-Output MUST be valid JSON.
-
-User's Intention: {{{intention}}}
-`,
-  model: googleAI.model('gemini-1.5-flash-latest'),
-  config: {
-    temperature: 0.8,
-  },
-  output: {
-    format: 'json',
-    schema: RephraseDuaOutputSchema,
-  },
-});
-
-const rephraseDuaFlow = ai.defineFlow(
-  {
-    name: 'rephraseDuaFlow',
-    inputSchema: RephraseDuaInputSchema,
-    outputSchema: RephraseDuaOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
-  }
-);

@@ -1,56 +1,51 @@
-
 'use server';
-/**
- * @fileOverview A flow to generate a new Dua for a specific category.
- *
- * - generateCategoryDua - Generates a new Dua.
- * - GenerateCategoryDuaInput - The input type for the function.
- * - GenerateCategoryDuaOutput - The return type for the function.
- */
 
-import { ai } from '@/ai/genkit';
+import { chatCompletion, extractJSON } from '@/ai/server-utils';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
-
-const GenerateCategoryDuaInputSchema = z.object({
-  categoryName: z.string().describe('The name of the category to generate a Dua for, in Arabic (e.g., "الرزق").'),
-});
-export type GenerateCategoryDuaInput = z.infer<typeof GenerateCategoryDuaInputSchema>;
 
 const GenerateCategoryDuaOutputSchema = z.object({
-  dua: z.string().describe('The newly generated, short, and eloquent Arabic Dua for the given category.'),
+  dua: z.string(),
+  transliteration: z.string().optional(),
+  meaning: z.string().optional(),
 });
+
 export type GenerateCategoryDuaOutput = z.infer<typeof GenerateCategoryDuaOutputSchema>;
 
-export async function generateCategoryDua(input: GenerateCategoryDuaInput): Promise<GenerateCategoryDuaOutput> {
-  return generateCategoryDuaFlow(input);
-}
+export async function generateCategoryDua(category: string): Promise<GenerateCategoryDuaOutput> {
+  try {
+    const systemPrompt = "أنت خبير في الأدعية الإسلامية من القرآن والسنة.";
+    
+    const userPrompt = `أعطني دعاء من القرآن أو السنة مناسب لفئة \"${category}\".
 
-const prompt = ai.definePrompt({
-  name: 'generateCategoryDuaPrompt',
-  input: { schema: GenerateCategoryDuaInputSchema },
-  output: { schema: GenerateCategoryDuaOutputSchema },
-  prompt: `You are an expert in Islamic supplications (Dua).
-Your task is to generate a single, new, short, and eloquent Dua in Arabic for the following category: {{{categoryName}}}.
-The Dua should be original and not from a well-known list. It should be concise and heartfelt.
-Do not add any preamble or explanation, just provide the final Dua.
+قدم النتيجة في شكل JSON:
+{
+  \"dua\": \"نص الدعاء بالعربية\",
+  \"transliteration\": \"النطق بالحروف اللاتينية (اختياري)\",
+  \"meaning\": \"المعنى أو الترجمة (اختياري)\"
+}`;
 
-Category: {{{categoryName}}}
-`,
-  model: googleAI.model('gemini-1.5-flash-latest'),
-  config: {
-    temperature: 0.9,
-  },
-});
+    const response = await chatCompletion(systemPrompt, userPrompt, {
+      temperature: 0.7,
+    });
 
-const generateCategoryDuaFlow = ai.defineFlow(
-  {
-    name: 'generateCategoryDuaFlow',
-    inputSchema: GenerateCategoryDuaInputSchema,
-    outputSchema: GenerateCategoryDuaOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    const parsed = extractJSON(response);
+    
+    if (parsed && parsed.dua) {
+      return {
+        dua: parsed.dua,
+        transliteration: parsed.transliteration,
+        meaning: parsed.meaning,
+      };
+    }
+
+    // Fallback
+    return {
+      dua: response,
+      transliteration: undefined,
+      meaning: undefined,
+    };
+  } catch (error) {
+    console.error('Generate Category Dua Error:', error);
+    throw new Error('فشل في توليد الدعاء');
   }
-);
+}
