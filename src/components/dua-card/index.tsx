@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Share2, Volume2, Save, Check, Printer, Heart, VolumeX } from 'lucide-react';
@@ -34,8 +34,22 @@ const DuaCard: React.FC<DuaCardProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedDuas, setSavedDuas] = useLocalStorage<any[]>('saved_duas', []);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const isSaved = isInitiallySaved || savedDuas.some(savedDua => savedDua.dua === dua);
   
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(dua);
     toast({ title: 'تم نسخ الدعاء' });
@@ -64,35 +78,61 @@ const DuaCard: React.FC<DuaCardProps> = ({
         
         // Create speech utterance
         const utterance = new SpeechSynthesisUtterance(dua);
+        
+        // Try to find an Arabic voice
+        const arabicVoice = voices.find(voice => 
+          voice.lang.startsWith('ar') || 
+          voice.lang === 'ar-SA' || 
+          voice.lang === 'ar-EG'
+        );
+        
+        if (arabicVoice) {
+          utterance.voice = arabicVoice;
+        }
+        
         utterance.lang = 'ar-SA'; // Arabic (Saudi)
-        utterance.rate = 0.8; // Slower for better clarity
-        utterance.pitch = 1;
+        utterance.rate = 0.75; // Slower for better clarity and reverence
+        utterance.pitch = 1.0; // Normal pitch
+        utterance.volume = 1.0; // Full volume
         
         // Update state when speech ends
         utterance.onend = () => {
           setIsPlaying(false);
         };
         
-        utterance.onerror = () => {
+        utterance.onerror = (event) => {
+          console.error('Speech error:', event);
           setIsPlaying(false);
           toast({
             variant: "destructive",
             title: "خطأ",
-            description: "لم نتمكن من قراءة الدعاء",
+            description: "لم نتمكن من قراءة الدعاء. جرّب متصفحاً آخر.",
           });
         };
         
-        window.speechSynthesis.speak(utterance);
-        setIsPlaying(true);
+        // Small delay to ensure voices are loaded
+        setTimeout(() => {
+          window.speechSynthesis.speak(utterance);
+          setIsPlaying(true);
+        }, 100);
       }
     } else {
       toast({
         variant: "destructive",
         title: "غير مدعوم",
-        description: "المتصفح لا يدعم قراءة النصوص",
+        description: "المتصفح لا يدعم قراءة النصوص. جرّب Chrome أو Safari.",
       });
     }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (isPlaying) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [isPlaying]);
   
   const handleSave = () => {
     if (onSaveToggle) {
@@ -136,9 +176,13 @@ const DuaCard: React.FC<DuaCardProps> = ({
             <span className="text-xs">حفظ</span>
           </button>
           
-          <button onClick={handlePlayPause} className="flex items-center gap-2 text-[#f8f1e7]/60 hover:text-[#d4af37] transition-colors" title="استماع">
+          <button 
+            onClick={handlePlayPause} 
+            className="flex items-center gap-2 text-[#f8f1e7]/60 hover:text-[#d4af37] transition-colors" 
+            title={isPlaying ? "إيقاف" : "استماع"}
+          >
             {isPlaying ? (
-              <VolumeX className="w-5 h-5 text-green-400" />
+              <VolumeX className="w-5 h-5 text-green-400 animate-pulse" />
             ) : (
               <Volume2 className="w-5 h-5" />
             )}
