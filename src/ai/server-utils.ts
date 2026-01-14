@@ -1,23 +1,8 @@
 // Helper utilities for AI operations (no 'use server' needed)
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-import Groq from 'groq-sdk';
-
-// Initialize Groq client only on server-side
-let groqInstance: Groq | null = null;
-
-function getGroqClient() {
-  if (typeof window !== 'undefined') {
-    throw new Error('Groq can only be used on the server side');
-  }
-  
-  if (!groqInstance) {
-    groqInstance = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
-    });
-  }
-  
-  return groqInstance;
-}
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 // Helper function for chat completion
 export async function chatCompletion(
@@ -29,25 +14,19 @@ export async function chatCompletion(
     model?: string;
   }
 ) {
-  const groq = getGroqClient();
-  
-  const completion = await groq.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt
-      },
-      {
-        role: "user",
-        content: userPrompt
-      }
-    ],
-    model: options?.model || "llama-3.3-70b-versatile",
-    temperature: options?.temperature || 0.7,
-    max_tokens: options?.maxTokens || 1024,
+  const model = genAI.getGenerativeModel({ 
+    model: options?.model || "gemini-1.5-flash",
+    generationConfig: {
+      temperature: options?.temperature || 0.7,
+      maxOutputTokens: options?.maxTokens || 1024,
+    },
   });
 
-  return completion.choices[0]?.message?.content || '';
+  const prompt = `${systemPrompt}\n\n${userPrompt}`;
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  
+  return response.text();
 }
 
 // Helper function to extract JSON from response
