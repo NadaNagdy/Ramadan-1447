@@ -58,7 +58,6 @@ export async function generateReflection(): Promise<GenerateReflectionOutput> {
     
     return {
       reflection: "رمضان شهر الرحمة والمغفرة، فرصة لتجديد النفس والتقرب إلى الله بالعبادة والذكر."
-    };
+ };
   }
-}}
 }
