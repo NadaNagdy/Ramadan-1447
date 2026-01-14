@@ -1,6 +1,6 @@
 'use server';
 
-import { chatCompletion, extractJSON } from '@/ai/server-utils';
+import { chatCompletion, extractJSON } from '@/ai/dev';
 import { z } from 'zod';
 
 const GenerateReflectionOutputSchema = z.object({
@@ -31,7 +31,7 @@ export async function generateReflection(): Promise<GenerateReflectionOutput> {
 
 قدم الناتج في شكل JSON:
 {
-  \"reflection\": \"النص هنا\"
+  "reflection": "النص هنا"
 }`;
 
     const response = await chatCompletion(systemPrompt, userPrompt, {
@@ -45,7 +45,6 @@ export async function generateReflection(): Promise<GenerateReflectionOutput> {
       return { reflection: parsed.reflection };
     }
 
-    // Fallback: clean the response
     const cleanText = response
       .replace(/```json/g, '')
       .replace(/```/g, '')
@@ -61,4 +60,5 @@ export async function generateReflection(): Promise<GenerateReflectionOutput> {
       reflection: "رمضان شهر الرحمة والمغفرة، فرصة لتجديد النفس والتقرب إلى الله بالعبادة والذكر."
     };
   }
+}}
 }
