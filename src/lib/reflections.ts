@@ -1,10 +1,30 @@
-export const ramadanReflections = [
-  "رمضان فرصة لتجديد القلب وتطهير النفس، فلنجعل كل لحظة فيه خطوة نحو الله.",
-  "الصيام ليس مجرد امتناع عن الطعام، بل هو تدريب للروح على الصبر والتقوى.",
-  "في رمضان، دعواتك مستجابة وأبواب الجنة مفتوحة، فلا تضيع هذه اللحظات الثمينة.",
-  "القرآن نزل في رمضان، فلنجعل من هذا الشهر موسماً لتلاوة كتاب الله وتدبر معانيه.",
-  "رمضان شهر الرحمة والمغفرة، فلنستغل كل دقيقة فيه للتقرب من الله.",
-  "الصدقة في رمضان لها أجر مضاعف، فلنكن سخاء مع المحتاجين.",
-  "ليلة القدر خير من ألف شهر، فلنجتهد في العشر الأواخر طلباً لها.",
-  "رمضان مدرسة الأخلاق، فلنتعلم فيه الصبر والتسامح وحسن الخلق.",
+export interface Reflection {
+  id: number;
+  day: number;
+  title: string;
+  verse: string;
+  verseReference: string;
+  reflection: string;
+  dua: string;
+}
+
+export const reflections: Reflection[] = [
+  {
+    id: 1,
+    day: 1,
+    title: "The Month of Mercy",
+    verse: "O you who have believed, decreed upon you is fasting as it was decreed upon those before you that you may become righteous",
+    verseReference: "Al-Baqarah 2:183",
+    reflection: "Ramadan is a blessed month of spiritual renewal and reflection...",
+    dua: "O Allah, help me to fast and pray properly during this blessed month."
+  },
+  // Add more reflections as needed
 ];
+
+export function getReflectionByDay(day: number): Reflection | undefined {
+  return reflections.find(r => r.day === day);
+}
+
+export function getAllReflections(): Reflection[] {
+  return reflections;
+}
