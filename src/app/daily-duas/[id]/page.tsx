@@ -5,6 +5,14 @@ import DuaCard from '@/components/dua-card';
 import { FloatingStars } from '@/components/islamic-decorations';
 import { ArrowRight } from 'lucide-react';
 
+// Add this function here
+export async function generateStaticParams() {
+  // Generate params for all 30 days of Ramadan
+  return Array.from({ length: 30 }, (_, i) => ({
+    id: String(i + 1),
+  }));
+}
+
 type Props = {
   params: Promise<{ id: string }>; // Changed to Promise
 };
