@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -13,6 +12,18 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import DuaCard from '@/components/dua-card';
 import { toPng } from 'html-to-image';
 
+type SavedDua = {
+  title: string;
+  dua: string;
+};
+
+type CommunityDua = {
+  id: number;
+  author: string;
+  text: string;
+  amens: number;
+};
+
 export default function ShareDuaPage() {
   const [name, setName] = useState('');
   const [dua, setDua] = useState('');
@@ -20,8 +31,8 @@ export default function ShareDuaPage() {
   const [isRephrasing, setIsRephrasing] = useState(false);
   const [isShared, setIsShared] = useState(false);
   const { toast } = useToast();
-  const [savedDuas, setSavedDuas] = useLocalStorage('saved_duas', []);
-  const [communityDuas, setCommunityDuas] = useLocalStorage('community_duas_shared', []);
+  const [savedDuas, setSavedDuas] = useLocalStorage<SavedDua[]>('saved_duas', []);
+  const [communityDuas, setCommunityDuas] = useLocalStorage<CommunityDua[]>('community_duas_shared', []);
   const duaCardRef = useRef<HTMLDivElement>(null);
 
   const handleRephrase = async () => {
@@ -66,15 +77,15 @@ export default function ShareDuaPage() {
     setIsSubmitting(true);
     
     const authorName = name.trim() || 'زائر كريم';
-    const newDua = {
+    const newDua: CommunityDua = {
         id: Date.now(),
         author: authorName,
         text: dua,
         amens: 0,
     };
 
-    setSavedDuas((prev: any[]) => [...prev, { title: 'دعاء شخصي', dua: dua }]);
-    setCommunityDuas((prev: any[]) => [newDua, ...prev]);
+    setSavedDuas((prev) => [...prev, { title: 'دعاء شخصي', dua: dua }]);
+    setCommunityDuas((prev) => [newDua, ...prev]);
 
     setTimeout(() => {
       setIsSubmitting(false);
