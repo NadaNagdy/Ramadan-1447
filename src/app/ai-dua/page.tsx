@@ -113,7 +113,6 @@ export default function AiDuaPage() {
               title="الدعاء المصاغ" 
               dua={generatedDua.duaText} 
               showActions={true}
-              showShareImageButton={true}
             />
             
             <div className="bg-gold/10 border border-gold/20 rounded-3xl p-8">
