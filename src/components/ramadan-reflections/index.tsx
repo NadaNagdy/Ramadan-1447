@@ -2,26 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { ramadanReflections } from '@/lib/reflections';
 
 const RamadanReflection = () => {
   const [reflection, setReflection] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // جلب تأمل جديد من الـ API في كل مرة
-    fetch('/api/generate-reflection')
-      .then(res => res.json())
-      .then(data => {
-        setReflection(data.reflection);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching reflection:', error);
-        setReflection('رمضان شهر الرحمة والمغفرة، فلنستغل كل لحظة فيه للتقرب من الله.');
-        setIsLoading(false);
-      });
+    // Pick a random reflection on mount (client-side only)
+    const randomIndex = Math.floor(Math.random() * ramadanReflections.length);
+    setReflection(ramadanReflections[randomIndex]);
   }, []);
+
+  if (!reflection) {
+    return null; // Or a loading skeleton
+  }
 
   return (
     <section className="py-20 animate-fade-in" style={{ animationDelay: '0.5s' }}>
@@ -34,16 +29,9 @@ const RamadanReflection = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-10 pb-10 pt-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center gap-3 py-4">
-                <Loader2 className="w-6 h-6 text-gold animate-spin" />
-                <p className="text-xl font-amiri text-gold/70">جارٍ إنشاء تأمل جديد...</p>
-              </div>
-            ) : (
-              <p className="text-2xl font-amiri leading-relaxed text-center">
-                {reflection}
-              </p>
-            )}
+            <p className="text-2xl font-amiri leading-relaxed text-center">
+              {reflection}
+            </p>
           </CardContent>
         </Card>
       </div>
