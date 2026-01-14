@@ -31,7 +31,7 @@ export default function CategoriesPage() {
     
     setIsGenerating(true);
     try {
-      const { duas } = await generateCategoryDuas({ categoryName: currentCategory.arabicName });
+           const { duas } = await generateCategoryDuas(currentCategory.arabicName);
       
       setCategoryDuas(prev => ({
         ...prev,
