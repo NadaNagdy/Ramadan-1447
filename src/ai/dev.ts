@@ -1,10 +1,7 @@
-cat > src/ai/dev.ts << 'EOF'
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
-// Helper function for chat completion
 export async function chatCompletion(
   systemPrompt: string,
   userPrompt: string,
@@ -21,7 +18,7 @@ export async function chatCompletion(
       maxOutputTokens: options?.maxTokens || 1024,
     },
   });
-
+  
   const prompt = `${systemPrompt}\n\n${userPrompt}`;
   const result = await model.generateContent(prompt);
   const response = await result.response;
@@ -29,7 +26,6 @@ export async function chatCompletion(
   return response.text();
 }
 
-// Helper function to extract JSON from response
 export function extractJSON(text: string): any | null {
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -41,4 +37,3 @@ export function extractJSON(text: string): any | null {
   }
   return null;
 }
-EOF
