@@ -6,17 +6,18 @@ import { FloatingStars } from '@/components/islamic-decorations';
 import { ArrowRight } from 'lucide-react';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>; // Changed to Promise
 };
 
 export default async function DuaDetailPage({ params }: Props) {
-  const day = Number(params.id);
+  const { id } = await params; // Await the params
+  const day = Number(id);
   const dua = dailyDuas.find(d => d.day === day);
-
+  
   if (!dua) {
     notFound();
   }
-
+  
   return (
     <div className="min-h-screen bg-hero-gradient pt-24 pb-16 px-4">
       <FloatingStars />
@@ -32,4 +33,4 @@ export default async function DuaDetailPage({ params }: Props) {
       </div>
     </div>
   );
-};
+}
