@@ -64,25 +64,37 @@ export default function CategoriesPage() {
 
   const renderCategoryButton = (cat: typeof categories[0]) => {
     const isLink = !!specialCategoryLinks[cat.id];
-    const Component = isLink ? Link : 'button';
-    const props = isLink ? { href: specialCategoryLinks[cat.id] } : { onClick: () => setActiveCategory(cat.id) };
+    const baseClassName = cn(
+      'flex items-center gap-2 px-6 py-3 rounded-2xl transition-all',
+      activeCategory === cat.id
+        ? 'bg-gold text-navy font-bold shadow-lg shadow-gold/20'
+        : 'bg-card text-cream/60 border border-gold/20 hover:border-gold/50'
+    );
 
-    return (
-       <Component
+    if (isLink) {
+      return (
+        <Link
           key={cat.id}
-          {...props}
-          className={cn(
-            'flex items-center gap-2 px-6 py-3 rounded-2xl transition-all',
-            activeCategory === cat.id
-              ? 'bg-gold text-navy font-bold shadow-lg shadow-gold/20'
-              : 'bg-card text-cream/60 border border-gold/20 hover:border-gold/50'
-          )}
+          href={specialCategoryLinks[cat.id]}
+          className={baseClassName}
         >
           <span>{cat.icon}</span>
           <span>{cat.arabicName}</span>
-        </Component>
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        key={cat.id}
+        onClick={() => setActiveCategory(cat.id)}
+        className={baseClassName}
+      >
+        <span>{cat.icon}</span>
+        <span>{cat.arabicName}</span>
+      </button>
     );
-  }
+  };
 
   const activeCategoryInfo = categories.find(c => c.id === activeCategory);
   const currentDuas = categoryDuas[activeCategory] || [];
@@ -134,4 +146,4 @@ export default function CategoriesPage() {
       </div>
     </div>
   );
-};
+}
