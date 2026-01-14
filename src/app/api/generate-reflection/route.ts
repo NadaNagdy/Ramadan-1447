@@ -3,39 +3,20 @@ import { chatCompletion } from '@/ai/server-utils';
 
 export async function GET() {
   try {
-    const systemPrompt = "أنت خبير في التأملات الإسلامية الروحانية. اكتب تأملات عميقة ومؤثرة عن رمضان.";
-    
-    const userPrompt = `اكتب تأملاً روحانياً جديداً وعميقاً عن شهر رمضان المبارك.
-    
-التأمل يجب أن يكون:
-- من جملة إلى جملتين فقط
-- مؤثر وعميق
-- يلامس القلب
-- باللغة العربية الفصحى
-- مختلف في كل مرة
-
-أمثلة على الأسلوب:
-"رمضان فرصة لتجديد القلب وتطهير النفس، فلنجعل كل لحظة فيه خطوة نحو الله."
-"في رمضان، دعواتك مستجابة وأبواب الجنة مفتوحة، فلا تضيع هذه اللحظات الثمينة."
-
-اكتب تأملاً جديداً الآن:`;
+    const systemPrompt = "أنت خبير في التأملات الإسلامية الروحانية.";
+    const userPrompt = "اكتب تأملاً قصيراً وعميقاً عن شهر رمضان المبارك (جملة أو جملتين فقط)";
 
     const reflection = await chatCompletion(systemPrompt, userPrompt, {
-      temperature: 0.9, // عالية للحصول على تنوع أكبر
-      maxTokens: 200,
+      temperature: 0.9,
+      maxTokens: 150,
     });
 
-    return NextResponse.json({ reflection: reflection.trim() });
+    return NextResponse.json({ reflection });
   } catch (error) {
     console.error('Error generating reflection:', error);
-    
-    // في حالة الخطأ، نرجع تأمل افتراضي
-    return NextResponse.json({ 
-      reflection: 'رمضان شهر الرحمة والمغفرة، فلنستغل كل لحظة فيه للتقرب من الله.' 
-    });
+    return NextResponse.json(
+      { error: 'Failed to generate reflection' },
+      { status: 500 }
+    );
   }
 }
-
-// إضافة revalidate للتأكد من أن الـ API يعمل في كل مرة
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
