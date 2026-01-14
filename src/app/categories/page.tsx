@@ -17,10 +17,17 @@ const specialCategoryLinks: Record<string, string> = {
   'quranic-duas': '/quranic-duas'
 };
 
+type DuaItem = string | {
+  dua: string;
+  transliteration?: string;
+  meaning?: string;
+  source?: string;
+};
+
 export default function CategoriesPage() {
   const [activeCategory, setActiveCategory] = useState<string>(categories.filter(c => !specialCategoryLinks[c.id])[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [categoryDuas, setCategoryDuas] = useState(initialCategoryDuas);
+  const [categoryDuas, setCategoryDuas] = useState<Record<string, DuaItem[]>>(initialCategoryDuas);
   const { toast } = useToast();
 
   const handleGenerateDua = async () => {
@@ -31,7 +38,7 @@ export default function CategoriesPage() {
     
     setIsGenerating(true);
     try {
-           const { duas } = await generateCategoryDuas(currentCategory.arabicName);
+      const { duas } = await generateCategoryDuas(currentCategory.arabicName);
       
       setCategoryDuas(prev => ({
         ...prev,
@@ -94,14 +101,17 @@ export default function CategoriesPage() {
 
         {activeCategoryInfo && !specialCategoryLinks[activeCategoryInfo.id] && (
           <div className="space-y-8 animate-fade-in text-left">
-            {currentDuas.map((dua, index) => (
-              <DuaCard 
-                key={`${activeCategory}-${index}`} 
-                title={`${activeCategoryInfo.arabicName} - ${index + 1}`} 
-                dua={dua}
-                showActions={true}
-              />
-            ))}
+            {currentDuas.map((dua, index) => {
+              const duaText = typeof dua === 'string' ? dua : dua.dua;
+              return (
+                <DuaCard 
+                  key={`${activeCategory}-${index}`} 
+                  title={`${activeCategoryInfo.arabicName} - ${index + 1}`} 
+                  dua={duaText}
+                  showActions={true}
+                />
+              );
+            })}
 
             <div className="mt-12 text-center pt-8">
               <Button
