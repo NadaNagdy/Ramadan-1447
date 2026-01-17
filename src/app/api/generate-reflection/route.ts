@@ -1,28 +1,32 @@
 import { chatCompletion, extractJSON } from '@/ai/server-utils';
-```
+import { NextRequest, NextResponse } from 'next/server';
 
-This import might be causing the issue.
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { prompt } = body;
+    
+    if (!prompt) {
+      return NextResponse.json(
+        { error: 'Prompt is required' },
+        { status: 400 }
+      );
+    }
 
-### Step 3: Share the Code
+    const systemPrompt = 'You are a helpful Islamic reflection assistant.';
+    const response = await chatCompletion(systemPrompt, prompt);
+    
+    return NextResponse.json({ 
+      reflection: response 
+    });
 
-**Can you copy and paste the entire content of this file:**
-```
-/src/app/api/generate-reflection/route.ts
-```
+  } catch (error: any) {
+    console.error('Error in generate-reflection:', error);
+    return NextResponse.json(
+      { error: 'Failed to generate reflection' },
+      { status: 500 }
+    );
+  }
+}
 
----
-
-## Quick Temporary Fix (To Get Your App Working):
-
-If you just want to get your dua feature working and don't need the reflection feature right now, you can temporarily disable it:
-
-### Option 1: Rename the file
-
-Rename:
-```
-/src/app/api/generate-reflection/route.ts
-```
-
-To:
-```
-/src/app/api/generate-reflection/route.ts.backup
+export const dynamic = 'force-dynamic';
